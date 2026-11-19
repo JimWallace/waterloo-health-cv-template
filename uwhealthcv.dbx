@@ -46,6 +46,23 @@
 %   note           optional: printed under the line, in italics (what the role
 %                  involved, or a load such as 12 submissions)
 %
+% @committee: one thesis or examination committee for a student the CV's
+%   owner doesn't supervise, or a count-only record (see count).
+%   author         the student, as "Family, Given"; leave it out for a
+%                  count-only record
+%   degree         PhD, MSc, MASc ... (\cvcommitteegroup can count several
+%                  degrees together, e.g. MASc with MSc)
+%   date           the years served: 2026, 2024/2026, or 2023/ while the
+%                  committee is ongoing (counted up to the current year)
+%   program        optional: the student's program (Computer Science)
+%   role           optional: printed after the program (chair, oral
+%                  comprehensive examination)
+%   note           optional: printed last in the parentheses (defended 2026,
+%                  in progress)
+%   title          optional: the thesis title, printed after in italics
+%   count          a count-only record: the number of committees for this
+%                  degree in the year of date (no author)
+%
 % @course: one course offering (one row of the COURSES TAUGHT table).
 %   course         the course number(s) as printed: HLTH 454/629
 %   title          optional: the course title: Information Visualization
@@ -63,7 +80,7 @@
 
 \input{ACM-Reference-Format.dbx}
 
-\DeclareDatamodelEntrytypes{grant,supervision,award,service,course}
+\DeclareDatamodelEntrytypes{grant,supervision,award,service,course,committee}
 
 \DeclareDatamodelFields[type=list,datatype=literal]{investigators}
 \DeclareDatamodelFields[type=field,datatype=literal]{
@@ -114,6 +131,15 @@
   role,
   note,
 }
+\DeclareDatamodelEntryfields[committee]{
+  author,
+  degree,
+  program,
+  role,
+  note,
+  title,
+  count,
+}
 \DeclareDatamodelEntryfields[course]{
   course,
   title,
@@ -156,6 +182,12 @@
 \DeclareDatamodelConstraints[course]{
   \constraint[type=mandatory]{
     \constraintfield{course}
+    \constraintfield{date}
+  }
+}
+\DeclareDatamodelConstraints[committee]{
+  \constraint[type=mandatory]{
+    \constraintfield{degree}
     \constraintfield{date}
   }
 }

@@ -5,6 +5,13 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+- `@committee` records for thesis and examination committees, with
+  `\printcommitteecounts{MSc, PhD}` (one line per year: "2026 --- 4 MSc,
+  6 PhD", counted from the records' dates) and `\printcommittees[period]{PhD}`
+  (the named committees as a bulleted list). `\cvcommitteegroup{MSc}{MSc,
+  MASc}` counts several degrees together. Count-only records (`count`, no
+  author) give a year's number where the committees aren't listed by name.
+  Shown in the example; the starter keeps them in `committees.bib`.
 - Starter: the Template update workflow opens an issue with a one-click PR link
   when the repository doesn't allow workflows to open pull requests, instead
   of failing.

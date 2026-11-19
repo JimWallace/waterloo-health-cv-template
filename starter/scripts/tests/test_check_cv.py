@@ -128,6 +128,50 @@ class ServiceRecords(unittest.TestCase):
         self.assertIn("YYYY/YYYY", errs[0][1])
 
 
+class CommitteeRecords(unittest.TestCase):
+    """committees.bib: author or count, a counted degree, a date the template reads."""
+
+    MAIN = "\\cvcommitteegroup{MSc}{MSc, MASc}\n\\printcommitteecounts{MSc, PhD}\n"
+
+    def setUp(self):
+        self.dir = Path(tempfile.mkdtemp())
+
+    def tearDown(self):
+        shutil.rmtree(self.dir)
+
+    def errors(self, committees_bib):
+        records = {name: cvlib.parse_bib(self.write(name, "")) for name in check_cv.RECORD_FILES}
+        records["committees.bib"] = cvlib.parse_bib(self.write("committees.bib", committees_bib))
+        found = []
+        check_cv.check_records(records, self.MAIN, lambda code, msg, key=None: found.append((key, msg)),
+                               lambda *a, **k: None)
+        return found
+
+    def write(self, name, text):
+        p = self.dir / name
+        p.write_text(text, encoding="utf-8")
+        return p
+
+    def test_named_ongoing_and_count_only_records_pass(self):
+        self.assertEqual(self.errors(
+            "@committee{a, author = {Student, A.}, degree = {MASc}, date = {2024/}}\n"
+            "@committee{b, author = {Student, B.}, degree = {PhD}, date = {2023/2025}}\n"
+            "@committee{c, degree = {PhD}, date = {2019}, count = {4}}\n"), [])
+
+    def test_a_degree_nothing_counts_is_an_error(self):
+        errs = self.errors("@committee{a, author = {Student, A.}, degree = {MMath}, date = {2024}}\n")
+        self.assertEqual([k for k, _ in errs], ["a"])
+        self.assertIn("cvcommitteegroup", errs[0][1])
+
+    def test_author_and_count_together_is_an_error(self):
+        errs = self.errors("@committee{a, author = {Student, A.}, degree = {PhD}, date = {2024}, count = {2}}\n")
+        self.assertIn("exactly one of author", errs[0][1])
+
+    def test_a_count_over_a_range_is_an_error(self):
+        errs = self.errors("@committee{a, degree = {PhD}, date = {2019/2020}, count = {2}}\n")
+        self.assertEqual([k for k, _ in errs], ["a"])
+
+
 class CourseRecords(unittest.TestCase):
     """courses.bib: course, title, a term-start date, digits for enrolment, Item=score pairs."""
 

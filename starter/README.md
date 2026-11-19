@@ -13,7 +13,7 @@ research, service or awards.
 | `cv.toml` | Your name, GitHub login, publication ids, and the template release in use. |
 | `main.tex` | The CV: headings, hand-written sections, which publications print under which heading. |
 | `scholar.bib` | Publications, talks and software. |
-| `grants.bib`, `supervision.bib`, `awards.bib`, `service.bib`, `activities.bib`, `courses.bib` | The other records, printed sorted and highlighted from their dates. |
+| `grants.bib`, `supervision.bib`, `awards.bib`, `service.bib`, `activities.bib`, `courses.bib`, `committees.bib` | The other records, printed sorted and highlighted from their dates. |
 | `apr.tex` | Two lines: `main.tex` in the APR version. Never put content here. |
 | `apr-formatting.tex` | Your APR settings (highlight strength and style). |
 | `data/trainees.yaml` | Trainees beyond `supervision.bib`, for the `*` marks. |
