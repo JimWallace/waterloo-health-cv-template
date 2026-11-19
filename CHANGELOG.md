@@ -5,6 +5,10 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+- README: what the template and the APR version do, with screenshots from the
+  starter CV (`docs/images/`, not copied into a CV's `template/`), and the
+  agentic workflow in `starter/`.
+
 ## v0.1.0 — 2026-11-19
 
 First release as its own repository. Pre-1.0: the interface may still change

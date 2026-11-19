@@ -51,7 +51,7 @@ jobs:
         run: |
           mkdir starter/template
           git archive HEAD | tar -x -C starter/template
-          rm -rf starter/template/starter starter/template/.github starter/template/new-cv.sh
+          rm -rf starter/template/starter starter/template/.github starter/template/docs starter/template/new-cv.sh
       - name: Compile the starter CV and the example (plain and APR)
         uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b # v4.1.0
         with:

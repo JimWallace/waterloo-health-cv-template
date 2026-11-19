@@ -21,7 +21,7 @@ release of the root in their `template/` directory.
   date in `\ProvidesPackage` (`uwhealthcv.sty`, `aprcv.sty`), and tags `vX.Y.Z`.
 - **`starter/` is a CV repository, not part of the package.** Its `CLAUDE.md`,
   agents, skills, scripts and workflows are for the CV that gets made from it;
-  `update_template.sh` leaves `starter/`, `.github/` and `new-cv.sh` out of a
+  `update_template.sh` leaves `starter/`, `docs/`, `.github/` and `new-cv.sh` out of a
   CV's `template/`. Keep it free of anyone's real data and generic: per-person
   settings go in `starter/cv.toml`.
 - CI (`.github/workflows/ci.yml`) builds `example/` and the starter CV (plain
