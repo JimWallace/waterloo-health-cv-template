@@ -1,0 +1,163 @@
+# Checks and compiles the CV on every PR and on main.
+# On main it also publishes the two PDFs to the "cv-latest" release
+# (named from owner.pdf in cv.toml).
+#
+# Errors fail the build, and so does any warning (check_cv.py, biber or LaTeX)
+# that is not in scripts/warnings-baseline.txt; see scripts/warning_ratchet.py.
+# TeX Live is pinned to one dated image (docker_image, by digest) so the
+# warnings do not change under us. It is TeX Live 2026, the version Overleaf
+# compiles new projects with (set its compiler to LuaLaTeX). To move on, change the image in both builds (tags:
+# ghcr.io/xu-cheng/texlive-debian, e.g. 20271001) and rerun
+# `python3 scripts/warning_ratchet.py --update <docs>` in the same PR.
+name: CV build
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch: # cv-merge, overleaf-sync and the weekly update start this for bot-made branches
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cv-build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Test the checkers
+        run: python3 -m unittest discover -s scripts/tests
+      - name: Check scholar.bib and the category lists (errors, and warnings not in the baseline)
+        run: python3 scripts/check_cv.py
+      - name: Keep personal data out of the template
+        run: |
+          family=$(python3 scripts/cvlib.py owner.family)
+          if [ -n "$family" ] && grep -rIn -i -- "$family" template/; then
+            echo "::error::template/ must not contain CV data (see template/CLAUDE.md)."
+            exit 1
+          fi
+
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Compile main.tex and apr.tex (TeX Live, latexmk + biber)
+        uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b # v4.1.0
+        with:
+          docker_image: ghcr.io/xu-cheng/texlive-debian:20261001@sha256:78ac2204b8df113aca0561e8f173ad5b89ee51e90795173d2fe9bcf0fbce162e # TeX Live 2026, 2026-10-01 snapshot
+          latexmk_use_lualatex: true # the engine latexmkrc names; the action's -pdf would override it
+          root_file: |
+            main.tex
+            apr.tex
+      - name: Name the PDFs
+        run: |
+          pdf=$(python3 scripts/cvlib.py owner.pdf); pdf=${pdf:-CV}
+          echo "PDF=$pdf" >> "$GITHUB_ENV"
+          mkdir -p out
+          cp main.pdf "out/$pdf.pdf"
+          cp apr.pdf  "out/$pdf-APR.pdf"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: cv-pdfs
+          path: out/*.pdf
+      - name: No warnings beyond the baseline (LaTeX and biber)
+        # On main the merge has happened; report, but still publish the PDFs.
+        continue-on-error: ${{ github.ref == 'refs/heads/main' }}
+        run: python3 scripts/warning_ratchet.py main apr
+      - name: PDF/UA-2 and PDF/A-4f (veraPDF)
+        continue-on-error: ${{ github.ref == 'refs/heads/main' }}
+        run: sh scripts/check_pdfa.sh main.pdf apr.pdf
+      - name: Fonts embedded; what changed in the PDFs since main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils >/dev/null
+          gh release download cv-latest --pattern "$PDF*.pdf" --dir ref 2>/dev/null \
+            || echo "No cv-latest release to compare with."
+          python3 scripts/pdf_report.py main.pdf apr.pdf \
+            --against "ref/$PDF.pdf" "ref/$PDF-APR.pdf"
+
+  template:
+    # The template on its own: its fictional example CV must build in both versions.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Compile the template example (plain and APR)
+        uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b # v4.1.0
+        with:
+          docker_image: ghcr.io/xu-cheng/texlive-debian:20261001@sha256:78ac2204b8df113aca0561e8f173ad5b89ee51e90795173d2fe9bcf0fbce162e # TeX Live 2026, 2026-10-01 snapshot
+          working_directory: template/example
+          latexmk_use_lualatex: true # the engine latexmkrc names; the action's -pdf would override it
+          root_file: |
+            example.tex
+            example-apr.tex
+      - name: No warnings beyond the baseline (LaTeX and biber)
+        run: python3 scripts/warning_ratchet.py example example-apr
+      - name: PDF/UA-2 and PDF/A-4f (veraPDF)
+        run: sh scripts/check_pdfa.sh template/example/example.pdf template/example/example-apr.pdf
+
+  gate:
+    # A PR labelled needs-review can't pass, so nothing merges it by accident.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Block PRs labelled needs-review
+        if: contains(github.event.pull_request.labels.*.name, 'needs-review')
+        run: |
+          echo "::error::This PR is labelled needs-review. Remove the label when you're happy with it."
+          exit 1
+      - run: echo "No blocking label."
+
+  ratchet:
+    # Claude writes, CI verifies, so a change that loosens the verification itself
+    # (accepts new warnings, or edits the checks) is not merged automatically.
+    # This job fails for such a PR; the owner merges it by hand. Not a required check.
+    if: github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          fetch-depth: 0
+      - name: The warning baseline only shrinks
+        run: python3 scripts/warning_ratchet.py --growth "$(git merge-base origin/main HEAD)"
+      - name: The checks are unchanged
+        run: |
+          base=$(git merge-base origin/main HEAD)
+          changed=$(git diff --name-only "$base" HEAD -- .github/workflows/cv-build.yml \
+            .github/workflows/cv-merge.yml scripts/check_cv.py scripts/cvlib.py \
+            scripts/warning_ratchet.py scripts/pdf_report.py scripts/check_pdfa.sh scripts/tests)
+          if [ -n "$changed" ]; then
+            for f in $changed; do echo "::error file=$f::This PR changes the checks; merge it by hand."; done
+            exit 1
+          fi
+          echo "The checks are unchanged."
+
+  publish:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [lint, compile]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: cv-pdfs
+          path: out
+      - name: Update the cv-latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          notes="Built from ${GITHUB_SHA::7} on $(date -u +%Y-%m-%d)."
+          if gh release view cv-latest >/dev/null 2>&1; then
+            gh release edit cv-latest --notes "$notes"
+          else
+            gh release create cv-latest --title "Latest CV" --notes "$notes" --target "$GITHUB_SHA"
+          fi
+          gh release upload cv-latest out/*.pdf --clobber

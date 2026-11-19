@@ -1,0 +1,56 @@
+# Weekly: if the template repository (cv.toml [template]) has a newer release than
+# the one in template/, open a PR that updates template/ to it
+# (scripts/update_template.sh). CV build then compiles both PDFs with the new
+# template. Minor and patch releases are labelled auto-merge; a new major
+# version can change the interface (see template/CHANGELOG.md), so it is labelled
+# needs-review.
+name: Template update
+
+on:
+  schedule:
+    - cron: "23 11 * * 2" # Tuesdays 11:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Update template/ to the newest release
+        run: |
+          current=$(python3 scripts/cvlib.py template.version)
+          sh scripts/update_template.sh latest
+          new=$(python3 scripts/cvlib.py template.version)
+          if [ "$new" = "$current" ]; then echo "template/ is up to date ($current)."; exit 0; fi
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard template)" ]; then
+            echo "No changes."; exit 0
+          fi
+          branch="template/$new"
+          if gh pr list --head "$branch" --state open --json number --jq '.[0].number' | grep -q .; then
+            echo "A PR for $new is already open."; exit 0
+          fi
+          label=auto-merge
+          [ "${current%%.*}" = "${new%%.*}" ] || label=needs-review
+          git config user.name "template-update[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -q -b "$branch"
+          git add -A template cv.toml
+          git commit -q -m "Update the CV template to $new"
+          git push -q --force origin "$branch"
+          repo=$(python3 scripts/cvlib.py template.repo)
+          gh label create "$label" --force >/dev/null 2>&1 || true
+          gh pr create --head "$branch" --base main --label "$label" \
+            --title "Update the CV template to $new" \
+            --body "Updates \`template/\` from $current to $new. Release notes: https://github.com/$repo/releases/tag/$new
+
+          CV build compiles both PDFs with the new template. Labelled \`$label\`$( [ "$label" = needs-review ] && echo ': a new major version can rename or remove commands, so check the CHANGELOG for anything to change in main.tex.' )"
+          # PRs made with the workflow token don't start other workflows.
+          gh workflow run cv-build.yml --ref "$branch"

@@ -1,0 +1,652 @@
+%% aprcv.sty -- one CV source, two outputs:
+%%
+%%   * the plain Faculty of Health CV (default), and
+%%   * the APR version (package option "apr"): adds the APR-only material
+%%     wrapped in \ifAPR ... \fi and highlights review-period items in the
+%%     colours the Faculty of Health asks for.
+%%
+%% Highlight colours (the Word highlighter colours named in the call):
+%%   teaching & supervision = yellow, research = bright green,
+%%   service = turquoise, awards = pink.
+%%
+%% Commands
+%%   \setreviewperiod{2025}{2026}   years under review
+%%   \hlteaching[years]{text}       highlight an entry (also \hlresearch,
+%%   \hlresearch[years]{text}       \hlservice, \hlaward). [years] is a year
+%%   \hlservice[years]{text}        (2025), a range (2024-2026), or an open
+%%   \hlaward[years]{text}          range (2021-, i.e. "to present"). The
+%%                                  entry is highlighted only when [years]
+%%                                  overlaps the review period; with no
+%%                                  [years] it is always highlighted.
+%%   \hlresearchrow{years}          at the start of a table row: colours the
+%%   (also \hlteachingrow, ...)     whole row (use on every row of an entry)
+%%   \ifAPR ... \fi                 material for the APR version only
+%%   \hlboth[years]{research}{teaching}{text}
+%%                                  two colours for work in two categories
+%%                                  (primary first); categories are teaching,
+%%                                  research, service, award
+%%   \aprsample{research}{teaching}{text}
+%%                                  inline example of a highlight, for notes
+%%   \sethighlightstrength{40}      softer highlights (100 = full Word colours)
+%%   \sethighlightstyle{split}      two-colour style: split, blend, bar or
+%%                                  dots (one marker per entry in the margin:
+%%                                  the award rosette, then research,
+%%                                  teaching and service dots, filled for
+%%                                  the categories that apply)
+%%
+%% Files (the template lives in template/; the CV's own files sit beside it)
+%%   main.tex                the CV's content; compiles to the plain CV
+%%   apr.tex                 the CV's switch; compiles main.tex as the APR version
+%%   apr-formatting.tex      the CV's settings for the APR version only
+%%   uwhealthcv.sty          template: loads everything below in order
+%%   NSERC-formatting.tex,   template: formatting shared by both versions
+%%   biblatex-formatting.tex
+%%
+%% biblatex entries are highlighted automatically (research colour) when their
+%% year falls in the review period. To change one entry's colour, add its key
+%% to the category aprteaching, aprservice or apraward; to stop one entry
+%% from being highlighted, add it to aprnone. To give an entry a second
+%% colour, add it to apralsoteaching, apralsoresearch, apralsoservice or
+%% apralsoaward. To highlight an entry whose year falls after the review
+%% period (e.g. accepted during the period, published the next year), add
+%% it to aprinclude.
+%%
+%% A dated range (date = {2022/2027}, e.g. a grant's tenure) is highlighted
+%% when it overlaps the review period. An undated entry with a status field
+%% (a student in progress) counts as ongoing, so it is highlighted.
+%% \aprtypecategory{supervision}{teaching} gives every entry of one type a
+%% default colour. A driver that sets an entry as a table row calls
+%% \aprsetentrycolour, colours the row with \aprentrycolour and starts the
+%% row's first cell with \aprentrymark (the dots style's marker).
+%% An entry's award badge (icon = {award}) is filled with the award colour
+%% when the entry is highlighted (biblatex-formatting.tex).
+%%
+%% Highlights are drawn behind the text from positions recorded on the
+%% previous run, so the APR version needs one extra compile (Overleaf and
+%% latexmk do this automatically).
+
+\NeedsTeXFormat{LaTeX2e}[2020/10/01]
+\ProvidesPackage{aprcv}[2026/11/19 v1.0.0 APR highlighting for Faculty of Health CVs]
+
+\newif\ifAPR
+\DeclareOption{apr}{\APRtrue}
+\DeclareOption{plain}{\APRfalse}
+\ProcessOptions\relax
+
+\@ifpackageloaded{xcolor}{}{\RequirePackage[table]{xcolor}}
+\@ifpackageloaded{colortbl}{}{\RequirePackage{colortbl}}
+
+%% ---------------------------------------------------------------- colours
+% Base hues are the Word highlighter colours. The colours actually used
+% (APRteaching, ...) are tints of these: \sethighlightstrength{40} mixes 40%
+% colour with 60% white. 100 gives the full Word colours.
+\definecolor{APRteachingBase}{RGB}{255,255,0}   % Word "Yellow"
+\definecolor{APRresearchBase}{RGB}{0,255,0}     % Word "Bright Green"
+\definecolor{APRserviceBase}{RGB}{0,255,255}    % Word "Turquoise"
+\definecolor{APRawardBase}{RGB}{255,0,255}      % Word "Pink"
+% dots style: dot colours. Yellow is darkened for the dot only, so a filled
+% teaching dot stays distinct from an empty one in greyscale.
+\colorlet{APRresearchDot}{APRresearchBase}
+\definecolor{APRteachingDot}{HTML}{E6C800}
+\colorlet{APRserviceDot}{APRserviceBase}
+\newcommand\sethighlightstrength[1]{%
+  \colorlet{APRteaching}{APRteachingBase!#1!white}%
+  \colorlet{APRresearch}{APRresearchBase!#1!white}%
+  \colorlet{APRservice}{APRserviceBase!#1!white}%
+  \colorlet{APRaward}{APRawardBase!#1!white}}
+\sethighlightstrength{100}
+
+%% ---------------------------------------------------------- review period
+\newcount\apr@from
+\newcount\apr@to
+\newcommand\setreviewperiod[2]{%
+  \global\apr@from=#1\relax
+  \global\apr@to=#2\relax}
+\setreviewperiod{2025}{2026}
+
+% \apr@ifyears{years}{true}{false} -- expandable, so it can sit at the start
+% of a table row. years: "", "2025", "2024-2026", "2024--2026" or "2021-".
+\def\apr@ifempty#1{%
+  \if\relax\detokenize{#1}\relax
+    \expandafter\@firstoftwo
+  \else
+    \expandafter\@secondoftwo
+  \fi}
+\def\apr@ifyears#1{%
+  \apr@ifempty{#1}%
+    {\@firstoftwo}%
+    {\expandafter\apr@ifyears@a\expanded{{\zap@space#1 \@empty}}}}
+\def\apr@ifyears@a#1{%
+  \apr@ifoverlap{\apr@first#1-\@nil}{\apr@last#1-\@nil}}
+\def\apr@first#1-#2\@nil{#1}
+\def\apr@last#1-#2\@nil{%
+  \apr@ifempty{#2}%
+    {\apr@ifempty{#1}{9999}{#1}}%
+    {\apr@last#2\@nil}}
+\def\apr@ifoverlap#1#2{%
+  \ifnum
+    \ifnum\numexpr#1\relax>\apr@to 1\else
+      \ifnum\numexpr#2\relax<\apr@from 1\else 0\fi
+    \fi
+    =\z@
+    \expandafter\@firstoftwo
+  \else
+    \expandafter\@secondoftwo
+  \fi}
+
+%% ------------------------------------------------- position marks (APR only)
+% Each highlighted entry gets a start and an end mark. At shipout the marks
+% write their page positions to the .aux file; on the next run the entry is
+% painted line by line in the page background, behind the text, so
+% highlighting never changes the layout.
+\ifdefined\pdfsavepos\else
+  \ifdefined\savepos
+    \let\pdfsavepos\savepos
+    \let\pdflastxpos\lastxpos
+    \let\pdflastypos\lastypos
+  \fi
+\fi
+\ifAPR\RequirePackage{tikz}\fi % for the blend style's gradients
+
+\newcount\apr@id
+\newcount\apr@maxid
+\newcount\apr@i
+\newcount\apr@n
+\newcount\apr@k
+\newdimen\apr@bleed  \apr@bleed=1pt
+\newdimen\apr@barw   \apr@barw=3pt
+\newdimen\apr@dotr  \apr@dotr=3.85pt % dot radius: the rosette's medallion
+\newdimen\apr@dotg  \apr@dotg=1.8pt  % gap between dots
+\newdimen\apr@dotm  \apr@dotm=6pt    % gap between the marker and the label or text
+\newdimen\apr@badgew \apr@badgew=11pt % width of the marker's award slot
+\newdimen\apr@slot  % award slot width actually reserved (0 in a sample
+                     % without a rosette)
+\newdimen\apr@dotx  % right edge of the marker: the left of a numbered
+                     % entry's label (such as [J1]), the text block, or a sample
+
+% two-colour style: halves (left half primary, right half secondary), split
+% (primary on top, secondary below), blend (primary fading into secondary
+% from left to right), bar (primary fill, secondary bar in the margin), or
+% dots (primary fill; in the margin, one marker per entry: the award
+% rosette when the entry is an award or has an award badge, then three
+% dots -- research, teaching, service -- filled for the entry's categories)
+\def\apr@style@halves{halves}
+\def\apr@style@split{split}
+\def\apr@style@blend{blend}
+\def\apr@style@bar{bar}
+\def\apr@style@dots{dots}
+\newcommand\sethighlightstyle[1]{%
+  \edef\apr@style{#1}%
+  % dots: the award badge is drawn as part of the marker, not in the margin
+  \ifdefined\cvawardinlinetrue
+    \ifx\apr@style\apr@style@dots \cvawardinlinetrue \else \cvawardinlinefalse \fi
+  \fi}
+\sethighlightstyle{bar}
+
+\def\aprS#1#2#3#4#5#6#7#8#9{}% records from an older version: ignored
+\def\aprM#1#2#3#4#5#6#7#8#9{%
+  \expandafter\gdef\csname apr@S@#1\endcsname{{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}%
+  \ifnum#1>\apr@maxid \global\apr@maxid=#1\relax\fi}
+\def\aprE#1#2#3#4{%
+  \expandafter\gdef\csname apr@E@#1\endcsname{{#2}{#3}{#4}}}
+
+% \apr@mark@start{primary colour}{secondary colour or empty}; primary may be
+% empty for an entry that is not highlighted but has a marker (an award
+% badge outside the review period). \apr@markbadge: the entry's badge
+% ("award" or empty).
+\def\apr@markbadge{}
+% \apr@markatlabel: non-empty for a numbered bibliography entry, whose
+% marker sits just left of its label ([J1]); other markers sit left of the
+% text block, clear of side headings such as a degree column
+\def\apr@markatlabel{}
+% \apr@markonly: non-empty for a table row, whose fill is its \rowcolor, so
+% only the dots style's marker is drawn
+\def\apr@markonly{}
+% \apr@markat: the marker's right edge when set (\aprmarkleftof), for
+% entries that sit beside a side label (a degree); such a marker and a
+% table row's are compact: no award slot unless the entry has a badge, and
+% they may come within \apr@compactedge of the paper edge
+\def\apr@markat{}
+\def\apr@markcompact{}
+% \aprmarkleftof{label}: inside a list, after \item[label], put the
+% markers of the entries that follow just left of that label
+\newcommand\aprmarkleftof[1]{%
+  \settowidth\@tempdima{#1}%
+  \ifdim\@tempdima<\labelwidth \@tempdima=\labelwidth \fi
+  \edef\apr@markat{\the\dimexpr 1in+\hoffset+\oddsidemargin
+    +\@totalleftmargin-\labelsep-\@tempdima\relax}%
+  \def\apr@markcompact{x}}
+\newcommand\apr@mark@start[2]{%
+  \ifvmode\leavevmode\fi
+  \interlinepenalty\@M % keep a highlighted entry on one page
+  \global\advance\apr@id\@ne
+  \xdef\apr@cur{\the\apr@id}%
+  \pdfsavepos
+  \edef\apr@tmp{\write\@auxout{%
+    \string\aprM{\apr@cur}{\noexpand\the\ReadonlyShipoutCounter}%
+      {\noexpand\the\pdflastxpos}{\noexpand\the\pdflastypos}%
+      {{#1}{#2}{\apr@markbadge}{\ifx\apr@markat\@empty
+        \ifx\apr@markatlabel\@empty\else
+        \the\dimexpr 1in+\hoffset+\oddsidemargin
+          +\@totalleftmargin-\labelsep-\labelwidth\relax\fi
+        \else\apr@markat\fi}{\apr@markonly}{\apr@markcompact}}%
+      {\the\dimexpr 1in+\hoffset+\oddsidemargin+\@totalleftmargin\relax}%
+      {\the\linewidth}{\the\ht\strutbox}{\the\dp\strutbox}}}%
+  \apr@tmp}
+\newcommand\apr@mark@end{%
+  \unskip
+  \pdfsavepos
+  \edef\apr@tmp{\write\@auxout{%
+    \string\aprE{\apr@cur}{\noexpand\the\ReadonlyShipoutCounter}%
+      {\noexpand\the\pdflastxpos}{\noexpand\the\pdflastypos}}}%
+  \apr@tmp}
+
+% \apr@rowmark{primary}{secondary}: the dots style's marker for a table row,
+% at the start of its first cell (\aprentrymark)
+\newcommand\apr@rowmark[2]{%
+  \begingroup\def\apr@markonly{x}\def\apr@markcompact{x}\apr@mark@start{#1}{#2}\apr@mark@end\endgroup}
+
+%% painting (inside a picture with 1pt units; y measured up from \apr@oy)
+\newdimen\apr@pageht \newdimen\apr@oy
+\newdimen\apr@xs \newdimen\apr@ys \newdimen\apr@xe \newdimen\apr@ye
+\newdimen\apr@L  \newdimen\apr@R  \newdimen\apr@H  \newdimen\apr@D
+\newdimen\apr@HD \newdimen\apr@s  \newdimen\apr@Hs \newdimen\apr@Ds
+\newdimen\apr@yk \newdimen\apr@top \newdimen\apr@bot
+\newdimen\apr@gl \newdimen\apr@gr \newdimen\apr@mid \newdimen\apr@cut
+\newdimen\apr@ra \newdimen\apr@rb \newdimen\apr@rw \newdimen\apr@rh
+
+% \apr@rect{left}{bottom}{right}{top}{colour}
+\def\apr@rect#1#2#3#4#5{%
+  \apr@ra=\dimexpr#1\relax
+  \apr@rb=\dimexpr#2-\apr@oy\relax
+  \apr@rw=\dimexpr#3-(#1)\relax
+  \apr@rh=\dimexpr#4-(#2)\relax
+  \ifdim\apr@rw>\z@\ifdim\apr@rh>\z@
+    \put(\strip@pt\apr@ra,\strip@pt\apr@rb){%
+      \textcolor{#5}{\rule{\apr@rw}{\apr@rh}}}%
+  \fi\fi}
+
+% \apr@shade{left}{bottom}{right}{top}: primary-to-secondary gradient running
+% from \apr@gl to \apr@gr, clipped to this rectangle
+\def\apr@shade#1#2#3#4{%
+  \apr@ra=\dimexpr#1\relax
+  \apr@rb=\dimexpr#2-\apr@oy\relax
+  \apr@rw=\dimexpr#3\relax
+  \apr@rh=\dimexpr#4-\apr@oy\relax
+  \put(0,0){\begin{tikzpicture}[overlay]
+    \clip (\the\apr@ra,\the\apr@rb) rectangle (\the\apr@rw,\the\apr@rh);
+    \shade[left color=\apr@pc,right color=\apr@sc]
+      (\the\apr@gl,\the\apr@rb) rectangle (\the\apr@gr,\the\apr@rh);
+  \end{tikzpicture}}}
+
+% one line's band: \apr@band{left}{right}{bottom}{top}
+\def\apr@band#1#2#3#4{%
+  \ifx\apr@sc\@empty
+    \apr@rect{#1}{#3}{#2}{#4}{\apr@pc}%
+  \else\ifx\apr@style\apr@style@halves
+    \apr@mid=\dimexpr(\apr@gl+\apr@gr)/2\relax
+    \apr@cut=\dimexpr#2\relax
+    \ifdim\apr@cut>\apr@mid \apr@cut=\apr@mid \fi
+    \apr@rect{#1}{#3}{\apr@cut}{#4}{\apr@pc}%
+    \apr@cut=\dimexpr#1\relax
+    \ifdim\apr@cut<\apr@mid \apr@cut=\apr@mid \fi
+    \apr@rect{\apr@cut}{#3}{#2}{#4}{\apr@sc}%
+  \else\ifx\apr@style\apr@style@split
+    \apr@rect{#1}{#3}{#2}{(#3+#4)/2}{\apr@sc}%
+    \apr@rect{#1}{(#3+#4)/2}{#2}{#4}{\apr@pc}%
+  \else\ifx\apr@style\apr@style@blend
+    \apr@shade{#1}{#3}{#2}{#4}%
+  \else
+    \apr@rect{#1}{#3}{#2}{#4}{\apr@pc}%
+  \fi\fi\fi\fi}
+
+% paint one entry from \apr@xs,\apr@ys (start) to \apr@xe,\apr@ye (end)
+% (only the marker for an entry with no fill colour, or for a table row,
+% whose fill is its \rowcolor)
+\def\apr@paint{%
+  \let\apr@tmp\apr@markonly
+  \ifx\apr@pc\@empty \def\apr@tmp{x}\fi
+  \ifx\apr@tmp\@empty
+    \apr@paint@fill
+  \else
+    \ifx\apr@style\apr@style@dots \apr@marker \fi
+  \fi}
+\def\apr@paint@fill{%
+  \ifdim\apr@L>\apr@xs \apr@L=\apr@xs \fi
+  \apr@HD=\dimexpr\apr@H+\apr@D\relax
+  \apr@n=\numexpr(\apr@ys-\apr@ye)/\apr@HD\relax
+  \ifnum\apr@n<\z@ \apr@n=\z@ \fi
+  \ifnum\apr@n=\z@
+    \apr@gl=\apr@xs \apr@gr=\apr@xe
+    \apr@band{\apr@xs-\apr@bleed}{\apr@xe+\apr@bleed}%
+             {\apr@ys-\apr@D}{\apr@ys+\apr@H}%
+    \apr@top=\dimexpr\apr@ys+\apr@H\relax
+    \apr@bot=\dimexpr\apr@ys-\apr@D\relax
+  \else
+    \apr@gl=\apr@L \apr@gr=\apr@R
+    % spread the lines evenly between the first and last baselines
+    \apr@s=\dimexpr(\apr@ys-\apr@ye)/\apr@n\relax
+    \apr@Hs=\dimexpr\apr@s*\numexpr\apr@H\relax/\numexpr\apr@HD\relax\relax
+    \apr@Ds=\dimexpr\apr@s-\apr@Hs\relax
+    \apr@top=\dimexpr\apr@ys+\apr@Hs\relax
+    \apr@bot=\dimexpr\apr@ye-\apr@Ds\relax
+    \apr@k=\z@
+    \begingroup
+    \loop
+      \apr@yk=\dimexpr\apr@ys-\apr@s*\apr@k\relax
+      \apr@band
+        {\ifnum\apr@k=\z@\apr@xs\else\apr@L\fi-\apr@bleed}%
+        {\ifnum\apr@k=\apr@n\apr@xe\else\apr@R\fi+\apr@bleed}%
+        {\apr@yk-\apr@Ds}{\apr@yk+\apr@Hs}%
+    \ifnum\apr@k<\apr@n \advance\apr@k\@ne \repeat
+    \endgroup
+  \fi
+  \ifx\apr@sc\@empty\else\ifx\apr@style\apr@style@bar
+    \apr@rect{\apr@L-\apr@bleed-\apr@barw-.5pt}{\apr@bot}%
+             {\apr@L-\apr@bleed-.5pt}{\apr@top}{\apr@sc Base!75!white}%
+  \fi\fi
+  \ifx\apr@style\apr@style@dots \apr@marker \fi}
+
+% dots style: one marker left of the entry's first line, right-aligned
+% against the text block: an award slot, then three dots (research,
+% teaching, service) nearest the entry, each filled in full colour when the
+% entry's primary or secondary colour is that category. The award slot holds
+% the rosette -- filled when the entry is an award or
+% is highlighted and has an award badge, white for a badge outside the
+% review period, empty otherwise. The dots appear on highlighted entries
+% only.
+\def\apr@ifcat#1{%
+  \edef\apr@tmpa{APR#1}%
+  \ifx\apr@pc\apr@tmpa \expandafter\@firstoftwo
+  \else\ifx\apr@sc\apr@tmpa \expandafter\expandafter\expandafter\@firstoftwo
+  \else \expandafter\expandafter\expandafter\@secondoftwo \fi\fi}
+\def\apr@dot#1#2{% #1: category, #2: index from the right (0, 1, 2)
+  \apr@ra=\dimexpr\apr@dotx-\apr@dotm-\apr@dotr-(2\apr@dotr+\apr@dotg)*#2\relax
+  \apr@rb=\dimexpr\apr@ys+(\apr@H-\apr@D)/2-\apr@oy\relax
+  % filled: the category colour, black outline; empty: white, grey outline
+  \apr@ifcat{#1}%
+    {\def\apr@tmpb{fill=APR#1Dot,draw=black,line width=.7pt}}%
+    {\def\apr@tmpb{fill=white,draw=black!50,line width=.6pt}}%
+  \put(0,0){\begin{tikzpicture}[overlay]
+    \expandafter\filldraw\expandafter[\apr@tmpb]
+      (\the\apr@ra,\the\apr@rb) circle[radius=\the\apr@dotr];
+  \end{tikzpicture}}}
+% \apr@rosettefill: sets \apr@tmpc to the rosette's fill, or empty for none
+\def\apr@rosettefill{%
+  \apr@ifcat{award}{\def\apr@tmpc{APRaward}}{%
+    \ifx\apr@badge\@empty \def\apr@tmpc{}%
+    \else\ifx\apr@pc\@empty \def\apr@tmpc{white}%
+    \else \def\apr@tmpc{APRaward}\fi\fi}}
+\newdimen\apr@edge  \apr@edge=.45in % the marker stays this far from the paper edge
+\newdimen\apr@compactedge \apr@compactedge=.25in % a compact marker (a table
+                     % row, or beside a degree label) stays this far
+\newif\ifapr@onpage % painting the page (true) or an inline sample (false)
+\def\apr@marker{%
+  % on the page (not in a sample), keep the whole marker clear of the
+  % paper edge, where printers may not print
+  \ifapr@onpage
+    \ifx\apr@markcompact\@empty
+      \apr@cut=\dimexpr\apr@edge+\apr@slot+4\apr@dotg+6\apr@dotr+\apr@dotm\relax
+    \else
+      \ifx\apr@badge\@empty \apr@slot=\z@ \fi
+      \apr@cut=\dimexpr\apr@compactedge+\apr@slot+2\apr@dotg
+        \ifdim\apr@slot>\z@ +2\apr@dotg\fi+6\apr@dotr+\apr@dotm\relax
+    \fi
+    \ifdim\apr@dotx<\apr@cut \apr@dotx=\apr@cut \fi
+  \fi
+  \apr@rosettefill
+  \ifx\apr@tmpc\@empty\else\ifdefined\cvawardbadgepaths
+    \apr@ra=\dimexpr\apr@dotx-\apr@dotm-6\apr@dotr-4\apr@dotg-\apr@slot/2\relax
+    \apr@rb=\dimexpr\apr@ys+(\apr@H-\apr@D)/2-\apr@oy\relax
+    % medallion (10,15.5) centred on the first line, ribbons hanging below
+    \put(0,0){\begin{tikzpicture}[overlay,line join=round,
+        shift={(\the\apr@ra,\the\apr@rb)},x=.55pt,y=.55pt,shift={(-10,-15.5)}]
+      \cvawardbadgepaths{\apr@tmpc}{.8pt}
+    \end{tikzpicture}}%
+  \fi\fi
+  \ifx\apr@pc\@empty\else
+    \apr@dot{research}{2}\apr@dot{teaching}{1}\apr@dot{service}{0}%
+  \fi}
+
+% #4: the marker's right edge (left of a list item's label, or the text
+% block, or \apr@markat); #5: marker only (a table row); #6: compact
+% marker; records from an earlier run may lack #3 to #6
+\def\apr@setcols#1#2#3#4#5#6#7\@nil{%
+  \def\apr@pc{#1}\def\apr@sc{#2}\def\apr@badge{#3}\def\apr@markonly{#5}%
+  \def\apr@markcompact{#6}%
+  \apr@dotx=\dimexpr1in+\hoffset+\oddsidemargin\relax
+  \if\relax\detokenize{#4}\relax\else\apr@dotx=#4\relax\fi}
+
+\def\apr@draw@one#1{%
+  \ifcsname apr@S@#1\endcsname\ifcsname apr@E@#1\endcsname
+    \expandafter\expandafter\expandafter\apr@draw@S
+      \csname apr@S@#1\endcsname{#1}%
+  \fi\fi}
+\def\apr@draw@S#1#2#3#4#5#6#7#8#9{% page,x,y,colours,L,W,H,D,id
+  \ifnum#1=\ReadonlyShipoutCounter
+    \apr@xs=#2sp\relax \apr@ys=#3sp\relax
+    \apr@L=#5\relax \apr@R=\dimexpr#5+#6\relax
+    \apr@slot=\apr@badgew \apr@onpagetrue
+    \apr@H=#7\relax \apr@D=#8\relax
+    \apr@setcols#4{}{}{}{}{}{}\@nil
+    \expandafter\expandafter\expandafter\apr@draw@E
+      \csname apr@E@#9\endcsname
+  \fi}
+\def\apr@draw@E#1#2#3{%
+  \ifnum#1=\ReadonlyShipoutCounter
+    \apr@xe=#2sp\relax \apr@ye=#3sp\relax
+    \apr@paint
+  \fi}
+
+\def\apr@draw@page{%
+  \ifnum\apr@maxid>\z@
+    \ifdefined\pdfpageheight
+      \apr@pageht=\pdfpageheight
+      \ifdim\apr@pageht=\z@ \apr@pageht=\paperheight \fi
+    \else
+      \apr@pageht=\paperheight
+    \fi
+    \apr@oy=\apr@pageht
+    \apr@i=\@ne
+    \loop\ifnum\apr@i>\apr@maxid\else
+      \expandafter\apr@draw@one\expandafter{\the\apr@i}%
+      \advance\apr@i\@ne
+    \repeat
+  \fi}
+
+\ifAPR
+  \AddToHook{shipout/background}{\apr@draw@page}
+\fi
+
+%% ------------------------------------------------------- document commands
+% categories: teaching, research, service, award
+\def\apr@col#1{\if\relax\detokenize{#1}\relax\else APR#1\fi}
+
+% \apr@hl{primary colour}{secondary colour}{years}{text}
+\newcommand\apr@hl[4]{%
+  \ifAPR
+    \apr@ifyears{#3}{\apr@mark@start{#1}{#2}#4\apr@mark@end}{#4}%
+  \else
+    #4%
+  \fi}
+\NewDocumentCommand\hlteaching{O{}+m}{\apr@hl{APRteaching}{}{#1}{#2}}
+\NewDocumentCommand\hlresearch{O{}+m}{\apr@hl{APRresearch}{}{#1}{#2}}
+\NewDocumentCommand\hlservice{O{}+m}{\apr@hl{APRservice}{}{#1}{#2}}
+\NewDocumentCommand\hlaward{O{}+m}{\apr@hl{APRaward}{}{#1}{#2}}
+% \hlboth[years]{primary}{secondary}{text}, e.g. \hlboth[2025]{teaching}{service}{...}
+\NewDocumentCommand\hlboth{O{}mm+m}{%
+  \edef\apr@tmp{\noexpand\apr@hl{\apr@col{#2}}{\apr@col{#3}}{\unexpanded{#1}}}%
+  \apr@tmp{#4}}
+
+% \aprsample{primary}{secondary}{text}: an inline example of a highlight,
+% for use in the notes; plain text in the plain CV
+\newsavebox\apr@box
+\NewDocumentCommand\aprsample{mm+m}{%
+  \ifAPR
+    \leavevmode
+    % the sample cannot break, so as a last resort (penalty 5000) let the
+    % line before it end ragged rather than push the sample into the margin;
+    % the two skips cancel when no break is taken there
+    \ifdim\lastskip>\z@
+      \hskip\z@\@plus10em\penalty5000\hskip\z@\@plus-10em\relax
+    \fi
+    \begingroup
+      \sbox\apr@box{#3}%
+      \edef\apr@pc{\apr@col{#1}}\edef\apr@sc{\apr@col{#2}}\def\apr@badge{}%
+      \def\apr@markonly{}\def\apr@markcompact{}%
+      \apr@oy=\z@ \apr@xs=\z@ \apr@xe=\wd\apr@box \apr@ys=\z@ \apr@ye=\z@
+      \apr@L=\z@ \apr@R=\wd\apr@box \apr@dotx=-\apr@bleed \apr@onpagefalse
+      \apr@H=\ht\strutbox \apr@D=\dp\strutbox
+      \unitlength=1pt
+      \let\apr@lead\relax
+      % in running text, make room for a margin bar so it doesn't overlap
+      % the preceding character
+      \ifx\apr@sc\@empty\else\ifx\apr@style\apr@style@bar
+        \def\apr@lead{\kern\dimexpr\apr@barw+\apr@bleed\relax}%
+      \fi\fi
+      \ifx\apr@style\apr@style@dots
+        % reserve the award slot only when the sample shows a rosette
+        \apr@rosettefill
+        \ifx\apr@tmpc\@empty \apr@slot=\z@
+        \else \apr@slot=\dimexpr\apr@badgew+2\apr@dotg\relax \fi
+        \edef\apr@lead{\kern\the\dimexpr6\apr@dotr+2\apr@dotg+\apr@slot+\apr@dotm+\apr@bleed\relax}%
+        \ifdim\apr@slot>\z@ \advance\apr@slot-2\apr@dotg \fi
+      \fi
+      % the room for the marker goes inside the box: a kern before it would
+      % be dropped when the sample starts a line
+      \hbox{\apr@lead\ifcv@tagged\begin{picture}[artifact](0,0)\else\begin{picture}(0,0)\fi
+        \apr@paint\end{picture}\usebox\apr@box}%
+    \endgroup
+  \else
+    #3%
+  \fi}
+
+% table rows: must stay expandable so \rowcolor ends up first in the row
+\newcommand\apr@row[2]{%
+  \ifAPR\expandafter\@firstofone\else\expandafter\@gobble\fi
+  {\apr@ifyears{#2}{\rowcolor{#1}}{}}}
+\newcommand\hlteachingrow{\apr@row{APRteaching}}
+\newcommand\hlresearchrow{\apr@row{APRresearch}}
+\newcommand\hlservicerow{\apr@row{APRservice}}
+\newcommand\hlawardrow{\apr@row{APRaward}}
+
+%% -------------------------------------------------------------- biblatex
+\@ifpackageloaded{biblatex}{%
+  \DeclareBibliographyCategory{aprteaching}%
+  \DeclareBibliographyCategory{aprservice}%
+  \DeclareBibliographyCategory{apraward}%
+  \DeclareBibliographyCategory{aprnone}%
+  \DeclareBibliographyCategory{aprinclude}%
+  \DeclareBibliographyCategory{apralsoteaching}%
+  \DeclareBibliographyCategory{apralsoresearch}%
+  \DeclareBibliographyCategory{apralsoservice}%
+  \DeclareBibliographyCategory{apralsoaward}%
+  % \aprtypecategory{type}{teaching|research|service|award}: the colour
+  % entries of one biblatex type get by default (otherwise research)
+  \newcommand\aprtypecategory[2]{\csdef{apr@type@#1}{APR#2}}%
+  % \aprsetentrycolour: for a driver that does not print the entry as text
+  % (a table row). Sets \aprentrycolour to the current entry's colour in the
+  % APR version, or to empty when it is not highlighted (and always in the
+  % plain CV), for use with \rowcolor, and \aprentrymark to the dots
+  % style's marker for the row (empty otherwise), for the start of the
+  % row's first cell.
+  \def\aprentrycolour{}\def\aprentrymark{}%
+  \newcommand\aprsetentrycolour{\def\aprentrycolour{}\def\aprentrymark{}}%
+  \ifAPR
+    % entries end at the next \item, outside the entry's group, so keep
+    % bibliography entries from splitting across pages here
+    \AtBeginBibliography{\interlinepenalty=\@M\relax}%
+    \def\apr@bib@on{}%
+    % \apr@bib@decide sets \apr@c to the entry's colour, or empty when it is
+    % not highlighted, and \apr@c@two to its second colour (or empty). An
+    % entry is in the review period when its year, or its range year to
+    % endyear (a grant's tenure), overlaps it; an undated entry with a
+    % status field (a student in progress) is ongoing, so it is in.
+    \def\apr@bib@decide{%
+      \def\apr@c{}\def\apr@c@two{}%
+      \ifcategory{aprnone}{}{%
+        \def\apr@dated{}\def\apr@y{}%
+        \iffieldint{year}{%
+          \def\apr@dated{x}%
+          % aprinclude: treat the entry as dated in the review period
+          \ifcategory{aprinclude}%
+            {\edef\apr@y{\the\apr@to}}%
+            {\iffieldint{endyear}%
+               {\edef\apr@y{\thefield{year}-\thefield{endyear}}}%
+               {\edef\apr@y{\thefield{year}}}}}%
+          {\iffieldundef{status}{}{\def\apr@dated{x}}}%
+        \ifx\apr@dated\@empty\else
+          \expandafter\apr@ifyears\expandafter{\apr@y}{\apr@bib@colours}{}%
+        \fi}}%
+    \def\apr@bib@colours{%
+      \ifcategory{aprteaching}{\def\apr@c{APRteaching}}{%
+        \ifcategory{aprservice}{\def\apr@c{APRservice}}{%
+          \ifcategory{apraward}{\def\apr@c{APRaward}}{%
+            \ifcsdef{apr@type@\thefield{entrytype}}%
+              {\letcs\apr@c{apr@type@\thefield{entrytype}}}%
+              {\def\apr@c{APRresearch}}}}}%
+      \ifcategory{apralsoteaching}{\def\apr@c@two{APRteaching}}{}%
+      \ifcategory{apralsoresearch}{\def\apr@c@two{APRresearch}}{}%
+      \ifcategory{apralsoservice}{\def\apr@c@two{APRservice}}{}%
+      \ifcategory{apralsoaward}{\def\apr@c@two{APRaward}}{}}%
+    \def\apr@bib@start{%
+      \global\let\apr@bib@on\@empty
+      \apr@bib@decide
+      % dots style: an award badge (icon = {award}) is part of the marker,
+      % so an entry with one gets a mark even when it is not highlighted
+      \def\apr@markbadge{}\def\apr@markatlabel{}%
+      \ifx\apr@style\apr@style@dots
+        \iffieldundef{labelnumber}{}{\def\apr@markatlabel{x}}%
+        \iffieldequalstr{usera}{award}{\def\apr@markbadge{award}}{%
+          \iffieldequalstr{usera}{images/hm.png}{\def\apr@markbadge{award}}{}}%
+      \fi
+      \@tempswafalse
+      \ifx\apr@c\@empty\ifx\apr@markbadge\@empty\else\@tempswatrue\fi
+      \else\@tempswatrue\fi
+      \if@tempswa
+        \gdef\apr@bib@on{x}%
+        \edef\apr@tmp{\noexpand\apr@mark@start{\apr@c}{\apr@c@two}}%
+        \apr@tmp
+      \fi
+      \def\apr@markbadge{}\def\apr@markatlabel{}}%
+    \renewcommand\aprsetentrycolour{%
+      \apr@bib@decide
+      \let\aprentrycolour\apr@c
+      \def\aprentrymark{}%
+      \ifx\apr@style\apr@style@dots\ifx\apr@c\@empty\else
+        \edef\aprentrymark{\noexpand\apr@rowmark{\apr@c}{\apr@c@two}}%
+      \fi\fi}%
+    \def\apr@bib@end{%
+      \ifx\apr@bib@on\@empty\else
+        \apr@mark@end
+        \global\let\apr@bib@on\@empty
+      \fi}%
+    % wrap begentry/finentry as they stand after the style and any
+    % user redefinitions (e.g. biblatex-formatting.tex) have been loaded
+    \AtBeginDocument{%
+      \ifcsname abx@macro@begentry\endcsname
+        \csletcs{abx@macro@apr@orig@begentry}{abx@macro@begentry}%
+      \else
+        \newbibmacro*{apr@orig@begentry}{}%
+      \fi
+      \ifcsname abx@macro@finentry\endcsname
+        \csletcs{abx@macro@apr@orig@finentry}{abx@macro@finentry}%
+      \else
+        \newbibmacro*{apr@orig@finentry}{\finentry}%
+      \fi
+      \renewbibmacro*{begentry}{%
+        \apr@bib@start\usebibmacro{apr@orig@begentry}}%
+      \renewbibmacro*{finentry}{%
+        \usebibmacro{apr@orig@finentry}\apr@bib@end}}%
+  \fi
+}{}
+
+%% ------------------------------------------------ APR-only formatting file
+% In the APR version, the CV's apr-formatting.tex (if present) is read here, after
+% NSERC-formatting.tex and biblatex-formatting.tex, so it can override them
+% for the APR version without touching the plain CV.
+\ifAPR
+  \InputIfFileExists{apr-formatting.tex}{}{}
+\fi
+
+\endinput

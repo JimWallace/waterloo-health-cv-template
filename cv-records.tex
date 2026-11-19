@@ -1,0 +1,424 @@
+% Grants and supervision as biblatex records (data model: uwhealthcv.dbx).
+% Part of the template, loaded by uwhealthcv.sty after aprcv.sty. The CV
+% keeps the records in .bib files and prints them with:
+%
+%   \cvowner{Name}               whose CV this is: \me in a grant prints it,
+%                                and the PDF title and author use it
+%   \printgrants                 the RESEARCH GRANTS AND CONTRACTS table,
+%                                newest first (by start, then end year)
+%   \printsupervision{PhD}       one numbered list of students under a
+%                                degree label: completed by date, then
+%                                those in progress, by family name
+%   \printawards                 ACADEMIC AWARDS AND DISTINCTIONS: newest
+%                                first, in file order within a year
+%   \printservice{school}        one list of @service records: those whose
+%                                level names it (a record may name several),
+%                                most recent first (open-ended first, then by
+%                                end year, then start), in file order otherwise
+%   \printcourses                COURSES TAUGHT: a table of @course records,
+%                                newest term first (term, course, level,
+%                                enrolment)
+%   \printcourses[scp]           the same with two more columns: the course
+%                                evaluation scores and their comparison
+%                                averages, headed \cvcoursescplabel and
+%                                \cvcourseaveragelabel (\renewcommand them);
+%                                the averages column only if some course
+%                                has scpaverage
+%
+% In the APR version a grant whose tenure overlaps the review period is
+% highlighted as research (the whole table row); a student who completed in the
+% period, or is in progress, is highlighted as teaching; an award in the
+% period is highlighted as an award; a service role whose years overlap the
+% period is highlighted as service; a course taught in the period is
+% highlighted as teaching (the whole table row).
+
+\RequirePackage{siunitx}
+
+\def\cv@owner{}
+\newcommand\cvowner[1]{\def\cv@owner{#1}%
+  \hypersetup{pdfauthor={#1}, pdftitle={Curriculum Vitae: #1}}}% PDF/XMP metadata
+
+\DeclareFieldFormat{cvplain}{#1}
+\DeclareFieldFormat{cvcosupervisor}{\mkbibparens{co-supervised with #1}}
+
+%% ----------------------------------------------------------------- grants
+% The grants print as a longtable, like a hand-made table: headings repeat
+% on each page, and a grant never splits across pages. biblatex cannot print
+% entries into table cells, so the grant driver collects one table row per
+% grant into \cv@rows (printing nothing), and \printgrants then sets them.
+%
+% Column widths: names, agency and short title wrap; amount and tenure don't.
+% The table is exactly \linewidth wide and lines up with the text margins: no
+% padding at the outer edges, 2\cvgrantcolsep between columns. Amount and
+% tenure take their widest entry, and the short title takes what is left
+% (\printgrants works it out), so a wide amount narrows the title column.
+\newlength\cvgrantnamewidth   \setlength\cvgrantnamewidth{4.15cm}
+\newlength\cvgrantagencywidth \setlength\cvgrantagencywidth{4.15cm}
+\newlength\cvgranttitlewidth
+\newlength\cvgrantcolsep      \setlength\cvgrantcolsep{4pt}
+
+% every investigator, never truncated to "et al." (biblatex's default
+% truncates lists longer than three)
+\ExecuteBibliographyOptions[grant]{maxitems=999,minitems=999}
+
+% collect the investigators, one per line, into \cv@inv
+\DeclareListFormat{cvcollect}{%
+  \ifnumgreater{\value{listcount}}{1}{\gappto\cv@inv{\newline}}{}%
+  \gappto\cv@inv{#1}}
+
+% \cv@field{name}: a field's text, unexpanded (empty when it is not set)
+\newcommand\cv@field[1]{%
+  \ifcsundef{abx@field@#1}{}%
+    {\unexpanded\expandafter\expandafter\expandafter{%
+       \csname abx@field@#1\endcsname}}}
+
+\gdef\cv@rows{}
+\DeclareBibliographyDriver{grant}{%
+  \gdef\cv@inv{}%
+  \printlist[cvcollect]{investigators}%
+  \aprsetentrycolour
+  \ifdefempty\cv@rows{}{\gappto\cv@rows{\\}}% blank row between grants
+  \xappto\cv@rows{%
+    \noexpand\cv@grantline
+      {\expandonce\aprentrycolour}%
+      {\cv@field{role}}%
+      {\expandonce\cv@inv}%
+      {\cv@field{agency}}%
+      {\cv@field{amount}}%
+      {\cv@field{year}}%
+      {\cv@field{endyear}}%
+      {\cv@field{title}}%
+      {\expandonce\aprentrymark}}}
+
+% \cv@grantline{colour}{role}{names}{agency}{amount}{year}{endyear}{title}{mark}
+% \me is the CV's owner, in bold, with the role; mark is the APR dots
+% style's marker (\aprentrymark)
+\newcommand\cv@grantline[9]{%
+  \ifx\relax#1\relax\else\rowcolor{#1}\fi
+  #9\def\me{\textbf{\cv@owner\ifx\relax#2\relax\else\space(#2)\fi}}#3 &
+  #4 &
+  \cv@amount{#5} &
+  \cv@tenure{#6}{#7} &
+  #8 \\*}
+\newcommand\cv@amount[1]{\$\num[group-separator={,},group-minimum-digits=4]{#1}}
+\newcommand\cv@tenure[2]{#1\ifx\relax#2\relax\else\ -- #2\fi}
+
+% \cv@widest\len{text}: widen \len (globally) to fit text
+\newcommand\cv@widest[2]{%
+  \settowidth\@tempdima{#2}%
+  \ifdim\@tempdima>#1\global#1\@tempdima\fi}
+\newlength\cv@amountwd
+\newlength\cv@tenurewd
+% measure the amount and tenure columns over the collected rows
+\newcommand\cv@measureline[9]{%
+  \cv@widest\cv@amountwd{\cv@amount{#5}}%
+  \cv@widest\cv@tenurewd{\cv@tenure{#6}{#7}}}
+
+\DeclareSortingTemplate{cvgrants}{
+  \sort[direction=descending]{\field{year}}
+  \sort[direction=descending]{\field{endyear}\field{year}}
+  \sort{\field{title}}
+  \sort{\field{agency}}
+}
+
+\defbibenvironment{cvcollect}{}{}{}
+
+\newcommand\printgrants{%
+  \gdef\cv@rows{}%
+  \setbox\z@\vbox{% collect the rows; nothing is printed here
+    \begin{refcontext}[sorting=cvgrants]%
+      \printbibliography[type=grant,env=cvcollect,heading=none]%
+    \end{refcontext}}%
+  \begingroup
+  \setlength\tabcolsep{\cvgrantcolsep}%
+  \global\cv@amountwd\z@
+  \global\cv@tenurewd\z@
+  \cv@widest\cv@amountwd{\underline{\$ Amount}}%
+  \cv@widest\cv@tenurewd{\underline{Tenure}}%
+  {\def\\{}\let\cv@grantline\cv@measureline\cv@rows}%
+  \setlength\cvgranttitlewidth{\dimexpr\linewidth-\cvgrantnamewidth
+    -\cvgrantagencywidth-\cv@amountwd-\cv@tenurewd-8\tabcolsep\relax}%
+  \begin{longtable}[c]{@{}>{\raggedright\arraybackslash}p{\cvgrantnamewidth}
+                       >{\raggedright\arraybackslash}p{\cvgrantagencywidth}
+                       l l
+                       >{\raggedright\arraybackslash}p{\cvgranttitlewidth}@{}}
+  \underline{Names of Researcher(s)} & \underline{Agency} & \underline{\$ Amount} &
+    \underline{Tenure} & \underline{Short Title} \\
+  \endhead
+  \cv@rows
+  \end{longtable}%
+  \endgroup}
+
+%% ------------------------------------------------------------ supervision
+\aprtypecategory{supervision}{teaching}
+
+% full given names, whatever giveninits says for publications
+\DeclareNameFormat{cvfull}{%
+  \nameparts{#1}%
+  \ifdefvoid\namepartgiven{}{\namepartgiven\space}%
+  \ifdefvoid\namepartprefix{}{\namepartprefix\space}%
+  \namepartfamily
+  \ifdefvoid\namepartsuffix{}{\space\namepartsuffix}}
+
+\newcommand\cv@monthname[1]{%
+  \ifcase#1\or January\or February\or March\or April\or May\or June\or
+  July\or August\or September\or October\or November\or December\fi}
+
+% Name, date (or status), Title. Note (co-supervised with X) [Position]
+\DeclareBibliographyDriver{supervision}{%
+  \usebibmacro{begentry}%
+  \printnames[cvfull]{author}%
+  \setunit{\addcomma\space}%
+  \iffieldint{year}
+    {\printtext{%
+       \iffieldint{month}{\cv@monthname{\thefield{month}}\space}{}%
+       \thefield{year}}}
+    {\printfield[cvplain]{status}}%
+  \setunit{\addcomma\space}%
+  \printfield[cvplain]{title}%
+  \setunit{\addperiod\space}%
+  \printfield[cvplain]{note}%
+  \setunit{\space}%
+  \printfield[cvcosupervisor]{cosupervisor}%
+  \setunit{\space}%
+  \printfield[brackets]{position}%
+  \usebibmacro{finentry}}
+
+\DeclareSortingTemplate{cvsupervision}{
+  \sort{\field{year}\literal{9999}}
+  \sort{\field[padside=left,padwidth=2,padchar=0]{month}\literal{99}}
+  \sort{\field{author}}
+}
+
+% The list starts right after its degree label, so LaTeX treats the first
+% \item specially and then clears \if@noparitem. biblatex typesets each
+% entry in a group, which would undo that and treat every item as the
+% first (the labels pile up), so clear it globally.
+\newcommand\cv@degreeitem{\item\global\let\if@noparitem\iffalse}
+\defbibenvironment{cvdegree}
+  {\begin{enumerate}[label=\arabic*.]%
+   \renewcommand*{\finentrypunct}{}}
+  {\end{enumerate}}
+  {\cv@degreeitem}
+
+\def\cv@degree{}
+\defbibcheck{cvdegree}{\iffieldequals{degree}{\cv@degree}{}{\skipentry}}
+
+\newcommand\printsupervision[1]{%
+  \begin{enumerate}
+    \item[#1]%
+    \aprmarkleftof{#1}% APR dots style: markers left of the degree label
+    \def\cv@degree{#1}%
+    \begin{refcontext}[sorting=cvsupervision]%
+      \printbibliography[type=supervision,check=cvdegree,env=cvdegree,heading=none]%
+    \end{refcontext}%
+  \end{enumerate}}
+
+%% ----------------------------------------------------------------- awards
+\aprtypecategory{award}{award}
+
+% [count x] Title
+\DeclareBibliographyDriver{award}{%
+  \usebibmacro{begentry}%
+  \iffieldint{count}
+    {\printtext{\thefield{count} $\times$}\setunit{\space}}
+    {}%
+  \printfield[cvplain]{title}%
+  \usebibmacro{finentry}}
+
+% sorted with cvservice (below): newest year first, then file order
+
+% the same layout as cvlist (uwhealthcv.sty)
+\defbibenvironment{cvawards}
+  {\cv@nobullets\begin{itemize}%
+   \setlength{\labelsep}{0em}\setlength{\itemsep}{-5pt}%
+   \renewcommand*{\finentrypunct}{}}
+  {\end{itemize}}
+  {\item[]}
+
+\newcommand\printawards{%
+  \begin{refcontext}[sorting=cvservice]%
+    \printbibliography[type=award,env=cvawards,heading=none]%
+  \end{refcontext}}
+
+%% ---------------------------------------------------------------- service
+\aprtypecategory{service}{service}
+
+% Title Years Role: the years field as written, else the date as
+% 2023 -- 2025 (an open-ended date, 2021/, prints 2021 -- Present); the role,
+% if any, after them
+\DeclareBibliographyDriver{service}{%
+  \usebibmacro{begentry}%
+  \printfield[cvplain]{title}%
+  \setunit{\space}%
+  \iffieldundef{years}
+    {\iffieldint{year}
+       {\printtext{%
+          \thefield{year}%
+          \iffieldint{endyear}
+            {\iffieldequalstr{endyear}{}
+               {\ -- Present}%
+               {\iffieldsequal{year}{endyear}{}{\ -- \thefield{endyear}}}}
+            {}}}
+       {}}
+    {\printfield[cvplain]{years}}%
+  \setunit{\space}%
+  \printfield[cvplain]{role}%
+  \usebibmacro{finentry}}
+
+% An open-ended date (2021/) has an empty end year, which biber would sort as
+% if the role had ended in its start year; flag those so they sort first.
+\DeclareSourcemap{
+  \maps[datatype=bibtex]{
+    \map{
+      \pertype{service}
+      \step[fieldsource=date, match=\regexp{/\s*\Z}, final]
+      \step[fieldset=userf, fieldvalue={open}]
+    }
+  }
+}
+
+% \printawards and \printcourses use this sorting too: awards have only a
+% year, courses also a month (newest term first). biber writes a full copy
+% of every entry into the .bbl for each sorting in use, so each new sorting
+% template costs TeX a lot of memory; reuse one where the order allows.
+\DeclareSortingTemplate{cvservice}{
+  \sort[direction=descending]{\field{userf}}
+  \sort[direction=descending]{\field{endyear}\field{year}}
+  \sort[direction=descending]{\field{year}}
+  \sort[direction=descending]{\field[padside=left,padwidth=2,padchar=0]{month}}
+  \sort{\citeorder}
+}
+
+% level may name several lists, comma-separated: {discipline, organizing}
+\def\cv@level{}
+\newcommand\cv@checklevel[1]{\ifdefstring\cv@level{#1}{\def\cv@inlevel{x}\listbreak}{}}
+\defbibcheck{cvlevel}{%
+  \def\cv@inlevel{}%
+  \iffieldundef{level}{}{%
+    \edef\cv@levels{\thefield{level}}%
+    \expandafter\forcsvlist\expandafter\cv@checklevel\expandafter{\cv@levels}}%
+  \ifdefempty\cv@inlevel{\skipentry}{}}
+
+\newcommand\printservice[1]{%
+  \def\cv@level{#1}%
+  \begin{refcontext}[sorting=cvservice]%
+    \printbibliography[type=service,check=cvlevel,env=cvawards,heading=none]%
+  \end{refcontext}}
+
+%% ---------------------------------------------------------------- courses
+% Like the grants: the driver collects one table row per course into
+% \cv@courserows and \printcourses sets them as a longtable. The course
+% cell holds the number, title, level and note. Term, enrolment and the score columns take their natural
+% width and the course column takes what is left of \linewidth.
+\aprtypecategory{course}{teaching}
+
+\newcommand\cvcoursescplabel{Evaluation}
+\newcommand\cvcourseaveragelabel{Average}
+\newlength\cvcoursewidth
+
+% the term from the month it starts: 1-4 Winter, 5-8 Spring, 9-12 Fall
+\newcommand\cv@term[2]{%
+  \ifx\relax#2\relax\else
+    \ifnum#2<5 Winter\else\ifnum#2<9 Spring\else Fall\fi\fi\space
+  \fi#1}
+
+% scores: {Implementation=4.5, Design=4.6} prints one "Item score/5" per line
+\newcommand\cv@scores[1]{%
+  \begingroup\def\cv@scoresep{}%
+  \forcsvlist\cv@scoreitem{#1}%
+  \endgroup}
+\newcommand\cv@scoreitem[1]{\cv@scoresep\def\cv@scoresep{\newline}%
+  \cv@scoresplit#1==\@nil}
+\def\cv@scoresplit#1=#2=#3\@nil{#1\ifx\relax#2\relax\else\space#2/5\fi}
+
+% the course cell: number and title (optional), then the level and the note
+% in italics, each on its own line
+\newcommand\cv@coursecell[4]{#1\ifx\relax#2\relax\else\space#2\fi
+  \ifx\relax#3\relax\else\newline\textit{#3}\fi
+  \ifx\relax#4\relax\else\newline\textit{#4}\fi}
+
+\gdef\cv@courserows{}
+\DeclareBibliographyDriver{course}{%
+  \aprsetentrycolour
+  \xappto\cv@courserows{%
+    \noexpand\cv@courseline
+      {\expandonce\aprentrycolour}%
+      {\noexpand\cv@term{\cv@field{year}}{\cv@field{month}}}%
+      {\noexpand\cv@coursecell{\cv@field{course}}{\cv@field{title}}{\cv@field{level}}{\cv@field{note}}}%
+      {\cv@field{enrolment}}%
+      {\noexpand\cv@scores{\cv@field{scp}}}%
+      {\noexpand\cv@scores{\cv@field{scpaverage}}}%
+      {\expandonce\aprentrymark}}}
+
+% \cv@courseline{colour}{term}{course}{enrolment}{scp}{average}{mark}
+% Rows end in \\, so the table can break between courses but not inside one.
+% mark is the APR dots style's marker (\aprentrymark).
+\newcommand\cv@courseline[7]{%
+  \ifx\relax#1\relax\else\rowcolor{#1}\fi
+  #7#2 & #3 & #4\cv@coursescores{#5}{#6}\\[0.4\baselineskip]}
+\newcommand\cv@coursescores[2]{}
+\newcommand\cv@coursescores@on[2]{& #1 & #2}
+\newcommand\cv@coursescores@scp[2]{& #1}
+
+% measure the natural-width columns over the collected rows
+\newlength\cv@termwd
+\newlength\cv@enrolwd
+\newlength\cv@scpwd
+\newlength\cv@avgwd
+% \cv@widestscore\len{item}: widen \len to fit one "Item score/5" line
+\newcommand\cv@widestscore[2]{\cv@widest#1{\cv@scoresplit#2==\@nil}}
+\newcommand\cv@measurecourse[7]{%
+  \cv@widest\cv@termwd{#2}%
+  \cv@widest\cv@enrolwd{#4}%
+  \cv@measurescores\cv@scpwd#5%
+  \cv@measurescores\cv@avgwd#6}
+% in the rows, #5 and #6 are \cv@scores{list}: measure each item of the list
+\def\cv@measurescores#1\cv@scores#2{\forcsvlist{\cv@widestscore#1}{#2}}
+
+\NewDocumentCommand\printcourses{o}{%
+  \gdef\cv@courserows{}%
+  \setbox\z@\vbox{% collect the rows; nothing is printed here
+    \begin{refcontext}[sorting=cvservice]% newest term first
+      \printbibliography[type=course,env=cvcollect,heading=none]%
+    \end{refcontext}}%
+  \begingroup
+  \setlength\tabcolsep{\cvgrantcolsep}%
+  \global\cv@termwd\z@ \global\cv@enrolwd\z@
+  \global\cv@scpwd\z@  \global\cv@avgwd\z@
+  \cv@widest\cv@termwd{\underline{Term}}%
+  \cv@widest\cv@enrolwd{\underline{Enrolment}}%
+  {\let\cv@courseline\cv@measurecourse\cv@courserows}%
+  \IfValueTF{#1}%
+    {\cv@widest\cv@scpwd{\underline{\cvcoursescplabel}}%
+     \ifdim\cv@avgwd=\z@ % no course has averages: leave out their column
+       \let\cv@coursescores\cv@coursescores@scp
+       \setlength\cvcoursewidth{\dimexpr\linewidth-\cv@termwd-\cv@enrolwd
+         -\cv@scpwd-6\tabcolsep\relax}%
+       \def\cv@colspec{@{}l>{\raggedright\arraybackslash}p{\cvcoursewidth}r
+         >{\raggedright\arraybackslash}p{\cv@scpwd}@{}}%
+       \def\cv@head{\underline{Term} & \underline{Course} & \underline{Enrolment} &
+         \underline{\cvcoursescplabel}}%
+     \else
+       \cv@widest\cv@avgwd{\underline{\cvcourseaveragelabel}}%
+       \let\cv@coursescores\cv@coursescores@on
+       \setlength\cvcoursewidth{\dimexpr\linewidth-\cv@termwd-\cv@enrolwd
+         -\cv@scpwd-\cv@avgwd-8\tabcolsep\relax}%
+       \def\cv@colspec{@{}l>{\raggedright\arraybackslash}p{\cvcoursewidth}r
+         >{\raggedright\arraybackslash}p{\cv@scpwd}
+         >{\raggedright\arraybackslash}p{\cv@avgwd}@{}}%
+       \def\cv@head{\underline{Term} & \underline{Course} & \underline{Enrolment} &
+         \underline{\cvcoursescplabel} & \underline{\cvcourseaveragelabel}}%
+     \fi}%
+    {\setlength\cvcoursewidth{\dimexpr\linewidth-\cv@termwd-\cv@enrolwd
+       -4\tabcolsep\relax}%
+     \def\cv@colspec{@{}l>{\raggedright\arraybackslash}p{\cvcoursewidth}r@{}}%
+     \def\cv@head{\underline{Term} & \underline{Course} & \underline{Enrolment}}}%
+  \expandafter\cv@coursetable\expandafter{\cv@colspec}%
+  \endgroup}
+\newcommand\cv@coursetable[1]{%
+  \begin{longtable}[c]{#1}
+  \cv@head \\
+  \endhead
+  \cv@courserows
+  \end{longtable}}

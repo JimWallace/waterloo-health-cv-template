@@ -1,0 +1,24 @@
+# Trainees (students and postdocs you supervise or have supervised).
+#
+# Everyone in supervision.bib counts as a trainee automatically, so a supervised
+# student needs a line here only for extra spellings (variants) or if their
+# name is spelled differently there (the checker flags that). This file adds
+# the other trainees: undergraduates, research assistants and co-authors you
+# mentored who are not formal supervision records.
+#
+# Used to check the * (trainee) marks in scholar.bib and the apralsoteaching
+# list in main.tex. A * on an author whose name is not here is reported, which
+# catches misspellings and flags new trainees for you to confirm.
+#
+# Each `variants` list holds the spellings that appear in the .bib. Optional fields
+# you can add per person (the checks ignore them for now):
+#   level: PhD | MSc | MA | postdoc | undergrad
+#   from: 2021
+#   to: 2026
+#
+# Automated runs never add a person here without asking you in the PR.
+
+trainees:
+  - name: Sam Student
+    variants: ["Student, Sam"]
+    level: PhD

@@ -1,0 +1,94 @@
+\reversemarginpar
+
+\DeclareSourcemap{
+    \maps[datatype=bibtex]{
+        \map{
+            \step[fieldsource=icon, match=\regexp{.}, final]
+            \step[fieldset=usera, origfieldval]
+        }
+    }
+}
+
+% The icon field: a badge in the margin. icon = {award} (or the older
+% images/hm.png) draws the award rosette below; any other value is an image
+% file. In the APR version, when the entry is highlighted (in the review
+% period), the rosette is filled with the award colour, so an award on a
+% paper or talk shows up as an award as well as in the entry's own colours.
+% \cvawardbadgepaths{fill}{line width}: the rosette's paths, 20 x 22.5 units,
+% for use inside a tikzpicture (the APR dots style draws it with its marker)
+\newcommand\cvawardbadgepaths[2]{%
+      \fill (6,13) -- (2.5,1) -- (5.5,3) -- (8,0) -- (10.5,10) -- cycle;
+      \fill (14,13) -- (17.5,1) -- (14.5,3) -- (12,0) -- (9.5,10) -- cycle;
+      \filldraw[fill=#1,line width=#2] (10,15.5) circle[radius=7];}
+\newcommand\cvawardbadge[1]{% #1: fill colour of the medallion
+    \begin{tikzpicture}[x=0.0625em,y=0.0625em,line join=round,
+                        cv/decorative]% the award is in the entry's note
+      \cvawardbadgepaths{#1}{0.14em}
+    \end{tikzpicture}}
+\newcommand\cvbadge[1]{%
+    \aprsetentrycolour
+    \ifboolexpr{test {\ifstrequal{#1}{award}} or test {\ifstrequal{#1}{images/hm.png}}}
+      {\ifdefempty\aprentrycolour
+         {\cvawardbadge{white}}%
+         {\cvawardbadge{APRaward}}}%
+      {\ifcv@tagged\includegraphics[height=1.5em,artifact]{#1}%
+       \else\includegraphics[height=1.5em]{#1}\fi}}
+% cvawardinline: set by the APR dots style, which draws the award badge as
+% part of its marker; other badges stay in the margin
+\newif\ifcvawardinline
+\DeclareFieldFormat{usera}{%
+    \ifboolexpr{bool {cvawardinline} and
+        (test {\ifstrequal{#1}{award}} or test {\ifstrequal{#1}{images/hm.png}})}
+      {}%
+      {\marginpar{\hspace{1.75em}\raisebox{-0.5\height}{\cvbadge{#1}}}}%
+}
+
+% The badge sits in the margin and takes no room in the line, so no space
+% follows it: entries with and without a badge start at the same place.
+\renewbibmacro*{begentry}{%
+    \printfield{usera}%
+}
+
+
+% Redefine the bibliography driver for the "inproceedings" type
+\DeclareBibliographyDriver{inproceedings}{%
+  \usebibmacro{bibindex}%
+  \usebibmacro{begentry}%
+  \usebibmacro{author/editor}%
+  \setunit{\labelnamepunct}\newblock
+  \usebibmacro{title}%
+  \newunit\newblock
+  \printfield{booktitle}%
+  \newunit\newblock
+  \printfield{volume}%
+  \printfield{number}%
+  \printfield{series}%
+  \newunit\newblock
+  \printfield{pages}%
+  \newunit\newblock
+  \printfield{organization}% Print organization here
+  \newunit\newblock
+  \printfield{publisher}% Print publisher here
+  \setunit{\addcomma\space}% Add comma before year
+  \printfield{location}% Print location here
+  \setunit{\addcomma\space}% Add comma before year
+  \printfield{year}% Print year here
+  \newunit\newblock
+  \printfield{note}% Print note here
+  \newunit\newblock
+  \usebibmacro{doi+eprint+url}% Print DOI, eprint, and URL here
+  \newunit\newblock
+  \usebibmacro{finentry}%
+}
+
+
+\setlength{\marginparsep}{-10pt} 
+
+
+
+
+
+
+
+
+

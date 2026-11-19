@@ -1,0 +1,24 @@
+%% uwhealthcv-pdfa.tex -- accessible (PDF/UA-2) and archival (PDF/A-4f) output.
+%%
+%% A CV inputs this file as its first line, before \documentclass, because
+%% the LaTeX kernel only accepts \DocumentMetadata there:
+%%
+%%   \input{uwhealthcv-pdfa}
+%%   \documentclass[12pt]{article}
+%%
+%% The kernel then tags the PDF: headings, paragraphs, lists, tables, links
+%% and the bibliography get a structure that screen readers follow, and
+%% decorative marks are artifacts (uwhealthcv.sty and aprcv.sty add the
+%% CV-specific parts: \cvsection and \cvsubheading as headings, table header
+%% rows, the APR markers and award badges as artifacts). It also writes the
+%% XMP metadata (title and author from \cvowner), the document language, an
+%% sRGB output intent, and embeds the fonts.
+%% PDF/UA-2 needs PDF 2.0, so the archival standard is PDF/A-4f (the PDF 2.0
+%% part of PDF/A). Tagging needs LuaLaTeX: under pdfLaTeX the longtables'
+%% repeated headings cannot be marked as artifacts (see latexmkrc).
+%% CI checks the result with veraPDF.
+\ifdefined\DocumentMetadata
+  \DocumentMetadata{pdfstandard=ua-2, pdfstandard=a-4f, pdfversion=2.0,
+    lang=en-CA, tagging=on}
+\fi
+\endinput

@@ -1,0 +1,72 @@
+# Merges a pull request once "CV build" passes (checks + both PDFs compile):
+#   - PRs the owner opens merge automatically (this includes PRs Claude opens on their
+#     behalf in a chat, which GitHub shows as theirs) — except branches starting with cv/.
+#     The owner is owner.github in cv.toml, or the repository owner if that is empty;
+#   - cv/ branches (the unattended weekly job) merge only when labelled auto-merge,
+#     which the job adds only after its verifiers pass;
+#   - Overleaf sync PRs merge when labelled auto-merge.
+# To hold any PR: mark it draft or add the needs-review label.
+# CV build fails on a new warning, and its ratchet job fails on a PR that accepts
+# new warnings or changes the checks, so those are never merged here: merge by hand.
+#
+# Merges made with the workflow token don't trigger other workflows, so this one
+# starts the main-branch build (PDF release) and the Overleaf sync itself.
+name: CV auto-merge
+
+on:
+  workflow_run:
+    workflows: ["CV build"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch != 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      BRANCH: ${{ github.event.workflow_run.head_branch }}
+      SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Merge if allowed
+        run: |
+          OWNER_LOGIN=$(python3 scripts/cvlib.py owner.github); OWNER_LOGIN=${OWNER_LOGIN:-${GITHUB_REPOSITORY%%/*}}
+          pr=$(gh pr list --head "$BRANCH" --state open \
+                 --json number,labels,headRefOid,isDraft,headRepositoryOwner,author --jq '.[0] // empty')
+          if [ -z "$pr" ]; then echo "No open PR for $BRANCH."; exit 0; fi
+          num=$(jq -r .number <<<"$pr")
+          labels=$(jq -r '[.labels[].name] | join(",")' <<<"$pr")
+          author=$(jq -r .author.login <<<"$pr")
+          owner=$(jq -r .headRepositoryOwner.login <<<"$pr")
+          if [ "$owner" != "${GITHUB_REPOSITORY%%/*}" ]; then echo "PR #$num is from a fork; not merging."; exit 0; fi
+          if [ "$(jq -r .isDraft <<<"$pr")" = "true" ]; then echo "PR #$num is a draft."; exit 0; fi
+          if [ "$(jq -r .headRefOid <<<"$pr")" != "$SHA" ]; then echo "PR #$num has newer commits; their build decides."; exit 0; fi
+          case ",$labels," in *,needs-review,*) echo "PR #$num is labelled needs-review."; exit 0;; esac
+
+          labelled=no
+          case ",$labels," in *,auto-merge,*) labelled=yes ;; esac
+          if [ "$labelled" = yes ]; then
+            reason="labelled auto-merge"
+          elif [ "$author" = "$OWNER_LOGIN" ] && [[ "$BRANCH" != cv/* ]]; then
+            reason="opened by $author"
+          else
+            echo "PR #$num (by $author, branch $BRANCH) needs the auto-merge label."; exit 0
+          fi
+
+          # Overleaf branches must keep their history so Overleaf can be fast-forwarded.
+          method=--squash
+          case "$BRANCH" in overleaf-*) method=--merge ;; esac
+          gh pr merge "$num" $method --delete-branch
+          echo "Merged PR #$num ($reason, $method)." | tee -a "$GITHUB_STEP_SUMMARY"
+
+          gh workflow run cv-build.yml --ref main
+          gh workflow run overleaf-sync.yml --ref main || true

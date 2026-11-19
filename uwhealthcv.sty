@@ -1,0 +1,193 @@
+%% uwhealthcv.sty -- the University of Waterloo Faculty of Health CV format.
+%%
+%% The template half of this repository. A CV loads this one package and
+%% supplies only its own content:
+%%
+%%   \input{uwhealthcv-pdfa}     % PDF/A-2b output (optional; see that file)
+%%   \documentclass[12pt]{article}
+%%   \usepackage{uwhealthcv}
+%%   \addbibresource{mycv.bib}
+%%   \setreviewperiod{2025}{2026}
+%%   ... \DeclareBibliographyCategory / \addtocategory lists ...
+%%   \begin{document} ... \end{document}
+%%
+%% For the APR version, a second file passes the "apr" option and inputs the
+%% first (see ../apr.tex):
+%%
+%%   \PassOptionsToPackage{apr}{aprcv}
+%%   \input{main}
+%%
+%% Files read here, in this order (the order matters):
+%%   NSERC-formatting.tex     page, fonts, headers, tables
+%%   biblatex (ACM style)     with biblatex-formatting.tex
+%%   aprcv.sty                APR highlighting; reads the CV's own
+%%                            apr-formatting.tex, if present
+%%   cv-records.tex           grants and supervision as biblatex records
+%%                            (data model: uwhealthcv.dbx)
+%%   cv-layout.tex            page-break rules (\keepwithnext, \sectionbreak)
+%%
+%% The template directory must be on TeX's search path: latexmkrc in the CV's
+%% directory adds it (Overleaf and CI read that file too).
+
+\NeedsTeXFormat{LaTeX2e}[2020/10/01]
+\ProvidesPackage{uwhealthcv}[2026/11/19 v1.0.0 Faculty of Health CV format]
+
+\DeclareOption{apr}{\PassOptionsToPackage{apr}{aprcv}}
+\DeclareOption{plain}{\PassOptionsToPackage{plain}{aprcv}}
+\ProcessOptions\relax
+
+\RequirePackage{enumitem}
+\RequirePackage[table,xcdraw]{xcolor}
+% the award badge (biblatex-formatting.tex); after xcolor, so xcolor gets its options
+\RequirePackage{tikz}
+\input{NSERC-formatting}
+
+\ifdefined\directlua\else\RequirePackage[utf8]{inputenc}\fi% UTF-8 is native in LuaLaTeX
+\RequirePackage[
+    style=ACM-Reference-Format,
+    backend=biber,
+    sorting=ydnt,
+    giveninits,
+    maxcitenames=99,
+    maxbibnames=99,
+    defernumbers=true,
+    locallabelwidth=true,
+    datamodel=uwhealthcv,
+]{biblatex}
+\input{biblatex-formatting}
+
+\RequirePackage{aprcv}
+\input{cv-records}
+
+%% ------------------------------------------------------- section markup
+% The building blocks of the Faculty of Health layout, so a CV names its
+% structure instead of repeating the list settings. Spacing between sections
+% stays in the CV, with \sectionbreak and \keepwithnext (cv-layout.tex).
+%
+%   \cvsection{TITLE}           a section heading (bold)
+%   \cvsubheading{Label:}       a label over a list, kept with the list
+%   \begin{cvlist}[itemsep]     an unnumbered, unindented list of \cvitem
+%     \cvitem text              (itemsep defaults to -5pt)
+%   \end{cvlist}
+%   \begin{cvbulletlist}[itemsep] the same, with a bullet hanging to the left
+%     \cvitem text              of each item, for entries that run to two lines
+%   \end{cvbulletlist}          (itemsep defaults to 0pt)
+%   \begin{cvgroup}{PhD}        a label in the left column, with the list
+%     \begin{cvbulletlist}...   starting on the line below it
+%   \end{cvgroup}
+%   \begin{cvparts}             lettered parts a), b), c) ... of a section
+%     \cvpart{Title}            one part, with a bold title
+%   \end{cvparts}
+%   \printcategory[J]{journal}  print one bibliography category, numbered
+%                               J1, J2, ... (no prefix: 1, 2, ...)
+%
+% Grants and supervision are biblatex records: see cv-records.tex.
+\newcommand\cvsection[1]{\cv@heading{H1}{\textbf{#1}}}
+\newcommand\cvsubheading[1]{\keepwithnext\cv@heading{H2}{#1}}
+% Tagged PDF (uwhealthcv-pdfa.tex): \ifcv@tagged is true when the kernel tags
+% the document. \cv@heading{H1}{text} tags its text as a heading. Headings
+% here often share a paragraph with what follows ("NAME/DATE: Name", or a
+% heading, \\ and text), so the heading becomes its own structure element and
+% the rest of the paragraph a P after it. Nothing changes on the page.
+% TikZ keys that work with or without tagging: [cv/decorative] makes a
+% picture an artifact (skipped by screen readers), [cv/alt={text}] gives a
+% figure its alternative text.
+\newif\ifcv@tagged
+\ifdefined\GetDocumentProperties
+  \edef\cv@tmp{\GetDocumentProperties{document/tagging}}%
+  \def\cv@tmpb{active}%
+  \ifx\cv@tmp\cv@tmpb \cv@taggedtrue \fi
+\fi
+\ifcv@tagged
+  \tagpdfsetup{
+    table/header-rows=1,% every table's first row is its headings
+    math/mathml/luamml/load=false}% maths (a few symbols) is tagged with its LaTeX source
+  % in the tagging family, so tikzpicture reads them before it starts
+  \tikzset{cv/decorative/.style={artifact}, cv/alt/.style={alt={#1}},
+    cv/decorative/.belongs to family=/tikz/tagging-setup,
+    cv/alt/.belongs to family=/tikz/tagging-setup}
+\else
+  \tikzset{cv/decorative/.style={}, cv/alt/.style={}}
+\fi
+\ExplSyntaxOn
+\cs_new_protected:Npn \cv@heading #1#2
+  {
+    \legacy_if:nTF { cv@tagged }
+      {
+        \mode_if_vertical:TF
+          { \group_begin: \tagpdfsetup { para/tag = #1 } \leavevmode \group_end: }
+          { \tagmcend \tagstructend \tagstructbegin { tag = #1 } \tagmcbegin { } }
+        #2
+        \peek_meaning:NTF \c_space_token
+          { \peek_remove_spaces:n { \peek_after:Nw \__cv_heading_after_space: } }
+          { \peek_after:Nw \__cv_heading_after: }
+      }
+      { #2 }
+  }
+% text or \\ after the heading: close the heading, open a P for the rest;
+% #1 puts back the space the peek removed
+\cs_new_protected:Npn \__cv_heading_after:n #1
+  {
+    \bool_lazy_any:nT
+      {
+        { \token_if_eq_meaning_p:NN \l_peek_token \\ }
+        { \token_if_letter_p:N \l_peek_token }
+        { \token_if_other_p:N \l_peek_token }
+      }
+      { \tagmcend \tagstructend \tagstructbegin { tag = P } \tagmcbegin { } }
+    #1
+  }
+\cs_new_protected:Npn \__cv_heading_after: { \__cv_heading_after:n { } }
+\cs_new_protected:Npn \__cv_heading_after_space: { \__cv_heading_after:n { ~ } }
+% \extlink's arrow is decoration (the link text says where it goes); without
+% this, screen readers read the icon's glyph name, "External-Link-Alt"
+\legacy_if:nT { cv@tagged }
+  {
+    \renewcommand \extarrow
+      {
+        \textsuperscript
+          {
+            \tag_mc_end_push: \tag_mc_begin:n { artifact }
+            \scalebox { 0.6 } { \faExternalLink* }
+            \tag_mc_end: \tag_mc_begin_pop:n { }
+          }
+      }
+  }
+\ExplSyntaxOff
+% \cvitem's label is empty. With \DocumentMetadata, TeX Live 2026's list code
+% reads \item[] as no label and would print the default bullet, so that is
+% emptied too (before \begin{itemize}, which reads it).
+\newcommand\cv@nobullets{\def\labelitemi{}\def\labelitemii{}}
+\newenvironment{cvlist}[1][-5pt]
+  {\cv@nobullets\begin{itemize}\setlength{\labelsep}{0em}\setlength{\itemsep}{#1}}
+  {\end{itemize}}
+\newcommand\cvitem{\item[]}
+% text starts where cvlist's does; the bullet sits in the margin before it.
+% Ragged right, so long titles in a narrower (nested) list wrap cleanly.
+\newenvironment{cvbulletlist}[1][0pt]
+  {\begin{itemize}[label=\textbullet, labelsep=0.5em, itemsep=#1]\raggedright\let\cvitem\item}
+  {\end{itemize}}
+\newenvironment{cvgroup}[1]
+  {\begin{enumerate}\item[#1]\leavevmode}
+  {\end{enumerate}}
+\newenvironment{cvparts}
+  {\begin{enumerate}[label=\alph*)]}
+  {\end{enumerate}}
+\newcommand\cvpart[1]{\item \textbf{#1}}
+% The prefix is printed as part of the label, not set with biblatex's
+% labelprefix: each labelprefix is a separate refcontext, and biber writes a
+% full copy of every entry into the .bbl for each one, which can exhaust
+% TeX's memory. locallabelwidth (biblatex option above) sizes the label
+% column for each heading, prefix included.
+\def\cv@labelprefix{}
+\DeclareFieldFormat{labelnumberwidth}{\mkbibbrackets{\cv@labelprefix#1}}
+\NewDocumentCommand\printcategory{om}{%
+  \begingroup
+  \IfNoValueTF{#1}{}{\def\cv@labelprefix{#1}}%
+  \printbibliography[category={#2},resetnumbers=true,heading=none]%
+  \endgroup}
+
+% cv-layout.tex ends with \makeatother, so it goes last.
+\input{cv-layout}
+
+\endinput

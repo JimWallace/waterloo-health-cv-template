@@ -1,0 +1,4 @@
+# Put the template (the parent directory) on TeX's search path.
+ensure_path('TEXINPUTS', '../');
+# Compile with LuaLaTeX, like the CV.
+$pdf_mode = 4;

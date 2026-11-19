@@ -1,0 +1,78 @@
+# Checks the template on every PR and push: the fictional example (example/) and
+# the starter CV (starter/, with this commit of the template in starter/template/,
+# as update_template.sh would install it) must compile in both versions with no
+# warnings beyond the starter's baseline and pass PDF/UA-2 and PDF/A-4f; the
+# starter's checker and its tests must pass.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  starter-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Versions agree
+        run: |
+          v=$(sed -n 's/.*\\ProvidesPackage{uwhealthcv}\[[0-9/]* \(v[0-9.]*\) .*/\1/p' uwhealthcv.sty)
+          a=$(sed -n 's/.*\\ProvidesPackage{aprcv}\[[0-9/]* \(v[0-9.]*\) .*/\1/p' aprcv.sty)
+          grep -q "^## $v " CHANGELOG.md || { echo "::error::CHANGELOG.md has no section for $v"; exit 1; }
+          [ "$v" = "$a" ] || { echo "::error::uwhealthcv.sty is $v but aprcv.sty is $a"; exit 1; }
+          case "$GITHUB_REF" in refs/tags/*) [ "${GITHUB_REF#refs/tags/}" = "$v" ] \
+            || { echo "::error::tag ${GITHUB_REF#refs/tags/} but the packages say $v"; exit 1; };; esac
+      - name: Test the checkers
+        working-directory: starter
+        run: python3 -m unittest discover -s scripts/tests
+      - name: Check the starter CV
+        working-directory: starter
+        run: python3 scripts/check_cv.py
+      - name: No real people in the template or the starter
+        run: |
+          # The starter's fictional owner must not appear in the template (a CV's own CI
+          # checks its template/ for its owner's name in the same way).
+          family=$(python3 starter/scripts/cvlib.py owner.family)
+          if grep -rIn -i -- "$family" --exclude-dir=starter --exclude-dir=.git --exclude-dir=.github .; then
+            echo "::error::The template mentions the starter's fictional owner."; exit 1
+          fi
+
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Install this commit of the template in starter/template
+        run: |
+          mkdir starter/template
+          git archive HEAD | tar -x -C starter/template
+          rm -rf starter/template/starter starter/template/.github starter/template/new-cv.sh
+      - name: Compile the starter CV and the example (plain and APR)
+        uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b # v4.1.0
+        with:
+          docker_image: ghcr.io/xu-cheng/texlive-debian:20261001@sha256:78ac2204b8df113aca0561e8f173ad5b89ee51e90795173d2fe9bcf0fbce162e # TeX Live 2026, 2026-10-01 snapshot
+          working_directory: starter
+          latexmk_use_lualatex: true
+          root_file: |
+            main.tex
+            apr.tex
+            template/example/example.tex
+            template/example/example-apr.tex
+          work_in_root_file_dir: true
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: pdfs
+          path: |
+            starter/*.pdf
+            starter/template/example/*.pdf
+      - name: No warnings beyond the baseline (LaTeX and biber)
+        working-directory: starter
+        run: python3 scripts/warning_ratchet.py main apr example example-apr
+      - name: PDF/UA-2 and PDF/A-4f (veraPDF)
+        working-directory: starter
+        run: sh scripts/check_pdfa.sh main.pdf apr.pdf template/example/example.pdf template/example/example-apr.pdf

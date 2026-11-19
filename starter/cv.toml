@@ -1,0 +1,23 @@
+# Your settings for the scripts, agents and workflows. The CV's content lives in
+# main.tex and the .bib files; this file only says who you are and where your
+# publication records are. Read by scripts/cvlib.py (config()) and the workflows
+# (python3 scripts/cvlib.py <key>).
+
+[owner]
+name = "Robin Quill"         # as it appears in the .bib files: \textbf{Robin Quill}
+family = "Quill"            # family name: excluded from trainee checks; CI keeps it out of template/
+github = ""                   # GitHub login whose PRs auto-merge (empty = the repository owner)
+pdf = "Quill-CV"            # release file names: Quill-CV.pdf and Quill-CV-APR.pdf
+affiliation = "Waterloo"      # used to pick your OpenAlex author record when it is not pinned
+
+[sources]
+# All optional. The "CV sources" workflow uses whichever are set.
+dblp_pid = ""                 # DBLP person id, e.g. "12/3456"
+orcid = ""                    # ORCID iD, e.g. "0000-0000-0000-0000" (Crossref lookup)
+openalex_author_id = ""       # e.g. "A5012345678"; resolved from name + affiliation if empty
+
+[template]
+# Where template/ comes from. The "Template update" workflow opens a PR when a newer
+# release (git tag) exists, using: git subtree pull --prefix=template <repo> <tag> --squash
+repo = "JimWallace/waterloo-health-cv-template"
+version = "v1.0.0"            # the release in template/ now; the workflow updates it

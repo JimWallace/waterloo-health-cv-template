@@ -1,0 +1,22 @@
+# Working files from the weekly update
+.cv-work/
+
+# LaTeX build output (Overleaf and CI build their own)
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.loc
+*.soc
+main.pdf
+apr.pdf
+
+__pycache__/
+template/example/*.pdf

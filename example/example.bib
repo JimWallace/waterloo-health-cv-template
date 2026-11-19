@@ -1,0 +1,190 @@
+% Fictional entries for the template's example CV. Not real publications.
+
+@article{example2026journal,
+  author  = {Student*, Sam and \textbf{Alex Example}},
+  title   = {A Fictional Journal Article Published During the Review Period},
+  journal = {Proc. ACM Hum.-Comput. Interact.},
+  volume  = {10},
+  number  = {CSCW},
+  year    = {2026},
+}
+
+@article{example2019journal,
+  author  = {\textbf{Alex Example} and Colleague, Casey},
+  title   = {A Fictional Journal Article From Before the Review Period},
+  journal = {Journal of Example Studies},
+  volume  = {4},
+  pages   = {1--12},
+  year    = {2019},
+  icon    = {images/hm.png},
+  note    = {\textbf{Best Paper Honourable Mention Award}},
+}
+
+@inproceedings{example2025conference,
+  author    = {\textbf{Alex Example} and Colleague, Casey},
+  title     = {A Fictional Conference Paper},
+  booktitle = {Proceedings of the Example Conference},
+  publisher = {Association for Computing Machinery},
+  location  = {Waterloo, ON, Canada},
+  pages     = {1--10},
+  year      = {2025},
+}
+
+@techreport{example2021report,
+  author      = {\textbf{Alex Example}},
+  title       = {A Fictional Technical Report},
+  institution = {University of Waterloo},
+  year        = {2021},
+}
+
+@software{example2026software,
+  author = {\textbf{Alex Example}},
+  title  = {Example Teaching Software},
+  year   = {2026},
+  url    = {https://example.org/software},
+}
+
+@misc{example2026talk,
+  author       = {Student*{\dag}, Sam and \textbf{Alex Example}},
+  title        = {A Fictional Poster Presented by a Trainee},
+  howpublished = {Example Health Symposium},
+  year         = {2026},
+  icon         = {award},
+  note         = {\textbf{Best Poster Award}},
+}
+
+@misc{example2025invited,
+  author       = {\textbf{Alex Example}{\dag}},
+  title        = {A Fictional Invited Talk},
+  howpublished = {Example University Seminar Series},
+  year         = {2025},
+}
+
+% Grants (fictional). \me is the CV's owner, set with \cvowner.
+@grant{exampleagency2024active,
+  investigators = {\me and Casey Colleague and {(4 others)}},
+  role          = {PI},
+  agency        = {Example Research Agency},
+  amount        = {10000},
+  date          = {2024/2026},
+  title         = {An Active Grant},
+}
+
+@grant{exampleagency2018past,
+  investigators = {Casey Colleague and \me},
+  role          = {Co-I},
+  agency        = {Example Foundation},
+  amount        = {1250000},
+  date          = {2018},
+  title         = {A Past Grant},
+}
+
+% Supervision (fictional).
+@supervision{student2026phd,
+  author       = {Student, Sam},
+  degree       = {PhD},
+  status       = {In progress},
+}
+
+@supervision{graduate2020phd,
+  author       = {Graduate, Pat},
+  degree       = {PhD},
+  date         = {2020-07},
+  title        = {A Completed Thesis},
+  cosupervisor = {Casey Colleague},
+  position     = {Assistant Professor, Example University},
+}
+
+@supervision{master2026msc,
+  author       = {Master, Morgan},
+  degree       = {MSc},
+  date         = {2026},
+  title        = {A Thesis Completed in the Review Period},
+  note         = {Example Programme},
+}
+
+% Awards (fictional). work = {key} ties an award to the paper or talk it
+% was for, which carries icon = {award}.
+@award{example2026posteraward,
+  title = {Example Health Symposium 2026 Best Poster Award},
+  date  = {2026},
+  work  = {example2026talk},
+}
+
+@award{example2025reviews,
+  title = {Special recognition for Example Conference 2025 Papers (exceptional reviews)},
+  count = {3},
+  date  = {2025},
+}
+
+@award{example2019bestpaper,
+  title = {Journal of Example Studies 2019 Best Paper Honourable Mention},
+  date  = {2019},
+  work  = {example2019journal},
+}
+
+% Service roles (fictional), printed by \printservice{<level>}: newest first,
+% highlighted as service when date overlaps the review period. years prints
+% instead of the date range; role prints after the years.
+@service{examplefaculty2025committee,
+  title = {A Faculty committee},
+  level = {faculty},
+  date  = {2025/2027},
+}
+
+@service{examplefaculty2016committee,
+  title = {A past committee},
+  level = {faculty},
+  date  = {2016},
+}
+
+@service{examplefaculty2014task,
+  title = {A task group with a break},
+  level = {faculty},
+  date  = {2014/2019},
+  years = {2014 -- 2015, 2018 -- 2019},
+}
+
+@service{exampleconf2026chair,
+  title = {Example Conference},
+  level = {discipline, organizing},
+  date  = {2026},
+  role  = {General Chair},
+}
+
+% Activities (fictional): date = {2021/} is an ongoing role, printed
+% "2021 -- Present" and sorted first.
+@service{exampleconf2021pc,
+  title = {An open-ended role,},
+  level = {programcommittee},
+  date  = {2021/},
+}
+
+@service{exampleconf2015pc,
+  title = {A past role,},
+  level = {programcommittee},
+  date  = {2015/2017},
+}
+
+% Courses (fictional): date is the month the term starts (01 Winter, 05
+% Spring, 09 Fall); scp and scpaverage are Item=score pairs out of 5.
+@course{example101w2026,
+  course     = {EXMP 101},
+  title      = {An Introductory Course},
+  level      = {Undergraduate},
+  date       = {2026-01},
+  enrolment  = {120},
+  responses  = {31},
+  scp        = {Implementation=4.4, Design=4.3},
+  scpaverage = {Implementation=4.1, Design=4.0},
+}
+
+@course{example601f2023,
+  course     = {EXMP 401/601},
+  title      = {A Course Taught at Two Levels},
+  level      = {Graduate \& Undergraduate},
+  date       = {2023-09},
+  enrolment  = {6},
+  scpaverage = {Instructor=4.2, Course=4.1},
+  note       = {Scores are not released for a class this small.},
+}

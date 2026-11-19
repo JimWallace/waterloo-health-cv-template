@@ -1,0 +1,18 @@
+# Publication metrics: acceptance rates and journal impact factors.
+#
+# The figures themselves live in the `note` of each scholar.bib entry
+# ("Acceptance rate: 25.6\% (64/250)", "Journal Impact Factor (2025): 4.4"; see
+# CLAUDE.md -> Conventions). This file records only the journal and conference
+# entries whose note has no figure, so scripts/missing_metrics.py does not keep
+# reporting them:
+#
+#   none        nothing to find: the track publishes no rate (extended abstracts,
+#               posters, demos, workshop papers, companion items) or the journal
+#               has no impact factor. Not searched again.
+#   unresolved  a figure probably exists but was not found. Automated runs retry
+#               these (automation/weekly-update.md, step 2e) and update the date.
+#
+# One line per key:   key: status | reason | YYYY-MM-DD (last checked)
+# Remove a key's line when its figure is added to scholar.bib.
+
+example2025conference: unresolved | Example Conference 2025 (fictional) | 2026-11-19

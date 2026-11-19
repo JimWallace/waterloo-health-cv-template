@@ -1,0 +1,178 @@
+% Your CV. It starts as a fictional example (Robin Quill): replace the
+% content with your own, keeping the structure. The Faculty of Health format,
+% APR highlighting and page-break rules live in template/ (template/README.md);
+% this file holds content only.
+%
+% Compile main.tex for the plain Faculty of Health CV, apr.tex for the APR
+% version (notes + review-period highlighting).
+\input{uwhealthcv-pdfa}% PDF/A output (template/); must come before \documentclass
+\documentclass[12pt]{article}
+
+\usepackage{uwhealthcv}
+
+\addbibresource{scholar.bib}
+\addbibresource{grants.bib}
+\addbibresource{supervision.bib}
+\addbibresource{awards.bib}
+\addbibresource{service.bib}
+\addbibresource{activities.bib}
+\addbibresource{courses.bib}
+\setreviewperiod{2025}{2026}
+\cvowner{Robin Quill}
+
+\DeclareBibliographyCategory{journal}
+\addtocategory{journal}{example2026journal, example2019journal}
+\DeclareBibliographyCategory{conference}
+\addtocategory{conference}{example2025conference}
+\DeclareBibliographyCategory{technicalreports}
+\addtocategory{technicalreports}{example2021report}
+\DeclareBibliographyCategory{software}
+\addtocategory{software}{example2026software}
+\DeclareBibliographyCategory{presentations}
+\addtocategory{presentations}{example2026talk}
+\DeclareBibliographyCategory{invited}
+\addtocategory{invited}{example2025invited}
+
+% APR version: entries that also count as teaching and supervision, shown in
+% both colours. Rule: a trainee you supervise is an author or presenter.
+% Software is teaching first; conference leadership is service and research.
+\addtocategory{apralsoteaching}{example2026journal, example2026talk, example2026posteraward}
+\addtocategory{aprteaching}{example2026software}
+\addtocategory{apralsoresearch}{example2026software, exampleconf2026chair}
+
+\begin{document}
+
+\noindent
+\thispagestyle{empty}
+\begin{center}
+\cvsection{CURRICULUM VITA}
+\end{center}
+
+\cvsection{NAME/DATE:} Robin Quill, \usvardate\today
+\\ \\
+\cvsection{CONTACT INFORMATION:} \\
+School of Public Health Sciences \\
+University of Waterloo
+\\ \\
+\cvsection{DEGREES RECEIVED:}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{p{2.5cm} p{5cm} p{5cm}}
+\underline{Degree} & \underline{Institution}  & \underline{Years} \\
+PhD                & University of Waterloo   & 2010 -- 2015 \\
+\end{tabular}
+\end{table}
+
+\sectionbreak
+\cvsection{ACADEMIC AWARDS AND DISTINCTIONS:}
+
+\printawards
+
+\sectionbreak
+\cvsection{SCHOLARLY AND PROFESSIONAL ACTIVITIES:}
+
+% @service records in activities.bib and service.bib: an ongoing role has date = {2021/}
+\cvsubheading{Conference Program Committee:}
+    \printservice{programcommittee}
+
+% a record can print in several lists: level = {discipline, organizing}
+\cvsubheading{Conference Organizing Committee:}
+    \printservice{organizing}
+
+% cvbulletlist: the same layout with bullets, for entries that run to two
+% lines; cvgroup puts a label (here the degree) in the left column, list below
+\cvsubheading{Thesis Committees:}
+\begin{cvgroup}{PhD}
+\begin{cvbulletlist}
+    \cvitem \hlteaching[2026]{A. Student (PhD, Example Sciences; defended 2026). \textit{A Longer Thesis Title That Runs On to a Second Line to Show Why the Bullets Help the Reader}}
+\end{cvbulletlist}
+\end{cvgroup}
+\begin{cvgroup}{MSc}
+\begin{cvbulletlist}
+    \cvitem A. N. Other (MSc, Example Studies; 2019). \textit{A Shorter Thesis Title}
+\end{cvbulletlist}
+\end{cvgroup}
+
+\ifAPR % APR version only ------------------------------------------
+\sectionbreak
+\cvsection{A Note on Reading the Highlighting}
+\\ \\
+Work from the review period is shown as \aprsample{research}{}{research}.
+Trainee work is shown as \aprsample{research}{teaching}{research, with
+supervision}.
+\fi % end APR version only -------------------------------------
+
+\sectionbreak
+\cvsection{PUBLICATIONS:}
+\begin{cvparts}
+
+    \nocite{*}
+
+    \cvpart{Refereed Journals:}
+    \printcategory[J]{journal}
+
+    \keepwithnext
+    \cvpart{Refereed Conference Proceedings:}
+    \printcategory[C]{conference}
+
+    \keepwithnext
+    \cvpart{Technical and Consulting Reports:}
+    \printcategory[T]{technicalreports}
+
+    \sloppy
+    \keepwithnext
+    \cvpart{Software:}
+    \printcategory[S]{software}
+
+\end{cvparts}
+
+\sectionbreak
+\cvsection{PRESENTATION TO SCHOLARLY GROUPS}\\
+Speaker(s) denoted by \dag\\
+
+\begin{cvparts}
+
+    \cvpart{Invited} \\
+    \printcategory{invited}
+
+    \keepwithnext
+    \cvpart{Self-initiated} \\
+    \printcategory{presentations}
+
+\end{cvparts}
+
+\sectionbreak
+\cvsection{RESEARCH GRANTS AND CONTRACTS:}
+
+\printgrants
+
+\sectionbreak
+\keepwithnext[6]
+\cvsection{GRADUATE STUDENT SUPERVISION}
+
+\begin{cvparts}
+    \cvpart{As Supervisor}
+    \printsupervision{PhD}
+    \printsupervision{MSc}
+\end{cvparts}
+
+\sectionbreak
+\keepwithnext
+\cvsection{SERVICE}
+
+    % @service records in activities.bib and service.bib, one list per level, newest first
+    \printservice{faculty}
+
+    \printservice{discipline}
+
+\sectionbreak
+\keepwithnext[6]
+\cvsection{COURSES TAUGHT}
+
+% @course records in courses.bib, newest term first. The APR version adds
+% the course evaluation scores; the 2026 offering is in the review period.
+\renewcommand\cvcourseaveragelabel{School Average}
+\ifAPR\printcourses[scp]\else\printcourses\fi
+
+\end{document}

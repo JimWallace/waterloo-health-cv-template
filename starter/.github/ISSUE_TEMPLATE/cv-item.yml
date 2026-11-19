@@ -1,0 +1,31 @@
+name: Add to my CV
+description: Tell Claude about something new for the CV (paper, talk, award, reviewing, grant, student…). The weekly update adds it in a verified PR.
+title: "CV: "
+labels: [cv-item]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is it?
+      options:
+        - Paper (accepted or published)
+        - Talk / presentation / poster
+        - Award or recognition
+        - Reviewing, PC, editorial or organizing role
+        - Grant or contract
+        - Student supervision / committee
+        - Service
+        - Correction to something already on the CV
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: >-
+        Whatever you have: a DOI or link, or a sentence like "CHI 2027 paper accepted with
+        Sam Student (PhD) and Casey Colleague, title …". For grants: agency, role, amount, years.
+        Name any new trainees so Claude can mark them.
+    validations:
+      required: true

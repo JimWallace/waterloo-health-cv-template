@@ -1,0 +1,154 @@
+% uwhealthcv.dbx -- biblatex data model for the CV's non-publication records.
+% Loaded by uwhealthcv.sty (biblatex option datamodel=uwhealthcv). That option
+% replaces the style's data model, so this file reads the ACM style's first
+% (articleno, numpages ...); without it those fields silently vanish.
+%
+% @grant: one research grant or contract.
+%   investigators  the names as listed, in order, separated by "and". Write
+%                  \me for the CV's owner (printed in bold with the role) and
+%                  a literal item such as {(13 others)} for unnamed members.
+%   role           the owner's role: PI, Co-PI, Co-I, Co-A ...
+%   agency         the funder (and programme)
+%   amount         whole dollars, digits only: 1710000
+%   date           tenure: 2016/2021, or 2025 for a single year
+%   title          the short title
+%
+% @supervision: one supervised student or postdoc.
+%   author         the student, as "Family, Given"
+%   degree         PDF, PhD, MSc, MMath, MHI, MSW ... (the list it prints under)
+%   date           completion: 2022, or 2024-11 to print the month
+%   status         instead of a date while ongoing: In progress
+%   title          thesis, project or practicum title
+%   note           programme or practicum details
+%   cosupervisor   printed as "(co-supervised with ...)"
+%   position       where they went next, printed in brackets
+%
+% @award: one line of ACADEMIC AWARDS AND DISTINCTIONS.
+%   title          the award as printed: CHI 2020 Best Paper Honorable Mention Award
+%   date           the year: 2020
+%   count          for several of the same: 3 prints "3 x Special recognition ..."
+%   work           the key of the paper or talk it was for, if any (the
+%                  checker makes sure that entry carries icon = {award})
+%
+% @service: one line of a SERVICE list.
+%   title          the role or committee as printed: SPHS Research Committee
+%   level          which \printservice{<level>} list(s) it prints in: school,
+%                  faculty, university, discipline ... several comma-separated
+%                  ({discipline, organizing}) print it in each
+%   date           the years served: 2023, 2023/2025, or 2021/ for an ongoing
+%                  role (prints 2021 -- Present); sorting and the APR highlight
+%                  use it
+%   years          optional: the years as printed, when the date range would
+%                  not say it right (2017, 2019 -- 2021)
+%   role           optional: printed after the years (General Chair)
+%
+% @course: one course offering (one row of the COURSES TAUGHT table).
+%   course         the course number(s) as printed: HLTH 454/629
+%   title          optional: the course title: Information Visualization
+%   date           the term, as the month it starts: 2024-01 (Winter),
+%                  2024-05 (Spring), 2024-09 (Fall)
+%   level          optional: Undergraduate, Graduate, Graduate \& Undergraduate
+%   enrolment      optional: the number of students, digits only
+%   scp            optional: course evaluation scores out of 5, as
+%                  Item=score pairs separated by commas, no spaces around =:
+%                  {Implementation=4.5, Design=4.6}
+%   responses      optional: how many students answered the survey (kept
+%                  with the record; not printed)
+%   scpaverage     optional: the comparison averages, in the same form
+%   note           optional: printed under the course, in italics
+
+\input{ACM-Reference-Format.dbx}
+
+\DeclareDatamodelEntrytypes{grant,supervision,award,service,course}
+
+\DeclareDatamodelFields[type=list,datatype=literal]{investigators}
+\DeclareDatamodelFields[type=field,datatype=literal]{
+  agency,
+  role,
+  degree,
+  status,
+  position,
+  cosupervisor,
+  work,
+  level,
+  years,
+  course,
+  scp,
+  scpaverage,
+}
+\DeclareDatamodelFields[type=field,datatype=integer]{amount,count,enrolment,responses}
+
+\DeclareDatamodelEntryfields[grant]{
+  investigators,
+  role,
+  agency,
+  amount,
+  title,
+  note,
+}
+\DeclareDatamodelEntryfields[supervision]{
+  author,
+  degree,
+  status,
+  title,
+  note,
+  cosupervisor,
+  position,
+}
+
+\DeclareDatamodelEntryfields[award]{
+  title,
+  count,
+  work,
+}
+\DeclareDatamodelEntryfields[service]{
+  title,
+  level,
+  years,
+  role,
+}
+\DeclareDatamodelEntryfields[course]{
+  course,
+  title,
+  level,
+  enrolment,
+  responses,
+  scp,
+  scpaverage,
+  note,
+}
+
+\DeclareDatamodelConstraints[grant]{
+  \constraint[type=mandatory]{
+    \constraintfield{investigators}
+    \constraintfield{agency}
+    \constraintfield{amount}
+    \constraintfield{date}
+    \constraintfield{title}
+  }
+}
+\DeclareDatamodelConstraints[supervision]{
+  \constraint[type=mandatory]{
+    \constraintfield{author}
+    \constraintfield{degree}
+  }
+}
+\DeclareDatamodelConstraints[award]{
+  \constraint[type=mandatory]{
+    \constraintfield{title}
+    \constraintfield{date}
+  }
+}
+\DeclareDatamodelConstraints[service]{
+  \constraint[type=mandatory]{
+    \constraintfield{title}
+    \constraintfield{level}
+    \constraintfield{date}
+  }
+}
+\DeclareDatamodelConstraints[course]{
+  \constraint[type=mandatory]{
+    \constraintfield{course}
+    \constraintfield{date}
+  }
+}

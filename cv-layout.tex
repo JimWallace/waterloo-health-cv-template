@@ -1,0 +1,44 @@
+% Page-break rules for both versions (main.tex and apr.tex). Part of the
+% template: layout only, content lives in the CV's main.tex. Tune the numbers
+% here, not in main.tex. Loaded by uwhealthcv.sty.
+
+% \keepwithnext[n]  before a heading: start a new page unless n lines fit
+%                   below it, so a heading never sits alone at the foot of a
+%                   page (default 5 lines).
+% \sectionbreak     before a major section: a blank line of space, or a new
+%                   page when less than a quarter of the page is left (the
+%                   space is dropped at the top of a page). Replaces \newpage,
+%                   which left half-empty pages whenever the section before
+%                   ended early. \sectionbreak[6\baselineskip] asks for less
+%                   room before breaking, for short sections.
+%
+% Both use \Needspace, which measures the space left and breaks at once. The
+% plain \needspace could break early (leaving half a page empty) and, just
+% before the grants table, printed a stray table header above the heading.
+\newcommand\keepwithnext[1][5]{\Needspace{#1\baselineskip}}
+\newlength\sectionskip
+\setlength\sectionskip{1\baselineskip plus 2pt minus 2pt}
+\newcommand\sectionbreak[1][.25\textheight]{\par\addvspace{\sectionskip}\Needspace{#1}}
+
+% No single line of a paragraph left alone at the top or foot of a page.
+\widowpenalty=10000
+\clubpenalty=10000
+\displaywidowpenalty=10000
+
+% Keep each bibliography entry on one page.
+\AtBeginBibliography{\interlinepenalty=10000\relax}
+
+% Bibliography entries (publications, students) are full of words TeX cannot
+% hyphenate: names, hyphenated compounds, paths. Let a line stretch a little
+% more when the only alternative is to run into the margin; entries that
+% already fit are typeset exactly as before.
+\AtBeginBibliography{\emergencystretch=1.5em\relax}
+
+% Never break between a line and the list that follows it (a heading and its
+% first item). LaTeX's default slightly encourages a break there.
+\makeatletter
+\@beginparpenalty=\@M
+\makeatother
+
+% Grants table: end the rows of one grant with \\* (no page break) and the
+% blank row after each grant with \\ (a page break may go there).

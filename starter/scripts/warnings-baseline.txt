@@ -1,0 +1,5 @@
+# Accepted warnings: the ratchet's baseline (see scripts/warning_ratchet.py).
+# CI fails on any warning not listed here, and on any line here that no longer
+# occurs, so this file only shrinks. Fix the cause rather than adding a line;
+# a PR that adds lines cannot auto-merge (the owner merges it by hand).
+# One line per occurrence: "<source>: <warning>".

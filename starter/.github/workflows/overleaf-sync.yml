@@ -1,0 +1,54 @@
+# Mirrors GitHub main to the Overleaf project through Overleaf's Git integration, and
+# turns edits made in Overleaf into a PR (see scripts/overleaf_sync.sh).
+# Does nothing until the secret OVERLEAF_GIT_TOKEN and variable OVERLEAF_PROJECT_ID exist.
+name: Overleaf sync
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "41 */3 * * *" # every 3 hours, to pick up edits made in Overleaf
+  workflow_dispatch:
+    inputs:
+      link_mode:
+        description: "First run only: safe = join histories only if content matches; github-wins = make Overleaf match GitHub"
+        type: choice
+        options: [safe, github-wins]
+        default: safe
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: overleaf-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      OVERLEAF_TOKEN: ${{ secrets.OVERLEAF_GIT_TOKEN }}
+      OVERLEAF_PROJECT_ID: ${{ vars.OVERLEAF_PROJECT_ID }}
+      LINK_MODE: ${{ inputs.link_mode || 'safe' }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Check configuration
+        id: cfg
+        run: |
+          if [ -z "$OVERLEAF_TOKEN" ] || [ -z "$OVERLEAF_PROJECT_ID" ]; then
+            echo "::notice::Overleaf sync is off: add the OVERLEAF_GIT_TOKEN secret and OVERLEAF_PROJECT_ID variable to turn it on."
+            echo "on=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "on=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        if: steps.cfg.outputs.on == 'true'
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Sync
+        if: steps.cfg.outputs.on == 'true'
+        run: bash scripts/overleaf_sync.sh
