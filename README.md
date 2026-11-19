@@ -1,21 +1,92 @@
-# Waterloo Faculty of Health CV template (with APR highlighting)
+# Waterloo Faculty of Health CV template
 
-A LaTeX template for the University of Waterloo Faculty of Health CV format. One
-source compiles to the plain CV and to an APR (Annual Performance Review)
-version that colours review-period items as teaching, research, service or
-awards. Grants, students, awards, service and courses are biblatex records, so
-they print sorted and are highlighted from their dates. The PDFs are tagged
-(PDF/UA-2) and archival (PDF/A-4f).
+**Your CV in the [University of Waterloo Faculty of Health CV format](https://uwaterloo.ca/health/faculty-staff/curriculum-vitae), from one LaTeX source, with the APR version built in and, if you want it, an AI assistant that keeps it up to date.**
 
-The repository has two parts:
+The Faculty publishes its CV format as a Word document. This template typesets
+that format in LaTeX, and from the same source it also builds the version you
+submit for the Annual Performance Review (APR), with every review-period item
+highlighted as teaching, research, service or an award. You keep one file, not
+two.
 
-- **The template** (this directory): the LaTeX package `uwhealthcv` and
-  `example/`, a fictional CV that uses every feature. No one's personal data.
-- **[`starter/`](starter/)**: a complete CV repository to start from: a fictional
-  CV split into `.bib` files, a checker for the CV's conventions, Claude Code
-  agents and skills that add and verify CV items, and GitHub Actions that build
-  both PDFs, publish them as a release, pull in new template releases, and
-  optionally mirror to Overleaf. See [`starter/README.md`](starter/README.md).
+![The same CV source compiled twice: the Faculty of Health CV on the left, and the APR version on the right, with review-period publications highlighted green as research and a trainee-authored paper and teaching software marked in two colours.](docs/images/plain-vs-apr.png)
+
+*Left: `main.tex`, the Faculty of Health CV. Right: `apr.tex`, the same content as
+the APR version. All the examples here are fictional.*
+
+## The APR version
+
+The APR guidelines judge teaching, research and service separately, over a
+two-year review period. The APR version shows the reviewer where each item belongs:
+
+- **Highlighting from dates, not by hand.** Set the period once
+  (`\setreviewperiod{2025}{2026}`). Papers, talks, grants, students, service roles,
+  awards and courses from that period are highlighted automatically. When the
+  period moves, the highlighting moves with it.
+- **Two colours when work counts twice.** A paper with a trainee co-author is
+  research *and* supervision, and gets a bar in the second colour. Software built
+  for teaching can be teaching first and research second. You choose an entry's
+  colours with biblatex categories (`aprteaching`, `apralsoresearch`, …).
+- **Award badges.** A paper or poster that won an award gets a rosette in the
+  margin, filled with the award colour when the entry is in the review period.
+- **APR-only content.** Wrap a section in `\ifAPR … \fi` and it appears only in
+  the APR version. Use it for notes to the committee, such as how to read
+  authorship order in your field, or for course evaluation scores.
+- **Your choice of style.** Entries in two colours can be shown as a bar,
+  halves, a split, a blend or dots, and the highlight strength is adjustable
+  (`apr-formatting.tex`).
+
+![Publications in the APR version: a review-period journal article highlighted green with a teaching bar for its trainee co-author, an award rosette beside an older paper, and a trainee's award-winning poster with a filled rosette.](docs/images/apr-publications.png)
+
+Grants, students, service, awards and courses are records in `.bib` files, not
+hand-made tables. They print sorted, in the Faculty's table layouts, and are
+highlighted from their dates: a grant whose tenure overlaps the period, a
+student still in progress, a committee you sat on, a course you taught. The
+APR version adds your course evaluation scores beside the school averages.
+
+![Grants, supervision, service and courses in the APR version: an active grant highlighted as research, current and recently graduated students as teaching, a Faculty committee as service, and a course from the review period with its evaluation scores and the school average.](docs/images/apr-records.png)
+
+The PDFs are tagged (PDF/UA-2, so screen readers get headings, lists and
+tables) and archival (PDF/A-4f).
+
+## A CV that keeps itself up to date
+
+Most of the effort of a CV is keeping it current: the paper accepted in March,
+the DOI that appears in June, the review recognition, the PC you joined, the
+student who defended. [`starter/`](starter/) is a complete CV repository that
+hands that work to [Claude Code](https://claude.com/claude-code) agents and
+checks everything they do.
+
+- **Weekly update from your inbox and calendar.** A scheduled Claude task, given
+  your Microsoft 365 (Outlook) connector, reads the past week's mail and calendar
+  for acceptances, review recognitions, program-committee and editorial roles,
+  invited talks and thesis examinations. It also checks DBLP, Crossref and
+  OpenAlex for new publications and missing DOIs. It drafts the entries and opens
+  a pull request. Rejections, invitations still pending and anything else private
+  never reach the repository; they go only in the task's report to you
+  ([`starter/AUTOMATION.md`](starter/AUTOMATION.md),
+  [`starter/automation/weekly-update.md`](starter/automation/weekly-update.md)).
+- **Tell it in a sentence.** Open an issue ("CHI 2027 paper accepted with my PhD
+  student …") and the next weekly run adds it as a pull request. With a Claude
+  token in the repository's secrets, mentioning `@claude` in the issue does it
+  right away.
+- **Every change is verified independently.** Before a pull request is labelled
+  for merging, separate sub-agents re-check it from scratch. They check citations
+  against Crossref, DBLP and the publisher; trainee marks against your roster;
+  the heading and APR colour; figures; and the whole diff against the change
+  list ([`starter/.claude/agents/`](starter/.claude/agents/)). A deterministic
+  checker (`scripts/check_cv.py`) and a warning ratchet run in CI on every
+  change.
+- **You stay in charge.** The assistant never invents a bibliographic fact,
+  never adds a trainee or rewrites an existing entry on its own, and never edits
+  your narrative. It asks instead, in a "Questions for the owner" list on the
+  pull request. Routine verified additions can merge themselves; everything else
+  waits for you.
+- **Builds and releases.** GitHub Actions compile both PDFs on every change,
+  publish the latest pair as a release, open a pull request when a new template
+  release comes out, and can mirror the repository to Overleaf.
+
+The template works without any of this: the LaTeX package needs nothing but a TeX
+installation or Overleaf.
 
 ## Quick start
 
@@ -24,11 +95,31 @@ git clone https://github.com/JimWallace/waterloo-health-cv-template
 sh waterloo-health-cv-template/new-cv.sh my-cv
 ```
 
-`my-cv/` is then a git repository holding the starter and the latest template
-release in `my-cv/template/`. Put your details in `cv.toml`, replace the
-fictional content, and push it to a new GitHub repository (or upload it to
-Overleaf, compiler LuaLaTeX). Without git, copy `starter/` and put this
-directory's files (all but `starter/`) in its `template/`.
+`my-cv/` is then a git repository holding the starter, with the latest template
+release in `my-cv/template/`. Next:
+
+1. Put your name, GitHub login and publication ids (DBLP, ORCID) in `cv.toml`.
+2. Replace the fictional content of `main.tex` and the `.bib` files.
+3. Build with `latexmk main.tex && latexmk apr.tex` (LuaLaTeX, TeX Live 2025 or
+   newer), or upload the folder to Overleaf and set the compiler to LuaLaTeX.
+4. To turn on the automation, push to a new GitHub repository and follow
+   [`starter/AUTOMATION.md`](starter/AUTOMATION.md).
+
+Without git, copy `starter/` and put this repository's files (everything except
+`starter/`, `docs/`, `.github/` and `new-cv.sh`) in its `template/` folder.
+
+## How it is organized
+
+- **The template** (the root of this repository) is the LaTeX package
+  `uwhealthcv`, plus `example/`, a fictional CV that uses every feature. It holds
+  the format only, never anyone's content.
+- **[`starter/`](starter/)** is a CV repository built on it. A CV keeps a copy of
+  a template release in its `template/` folder (Overleaf can't use git
+  submodules) and updates it with `sh scripts/update_template.sh latest`. A
+  weekly workflow does that for you as a pull request. Format and content stay
+  separate, and new template features reach every CV without any copying by hand.
+
+The rest of this file is the reference for the package.
 
 ## What is here
 

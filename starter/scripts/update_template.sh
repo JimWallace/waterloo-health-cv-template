@@ -22,7 +22,7 @@ git clone -q --depth 1 --branch "$tag" "$src" "$tmp/src" 2>/dev/null \
   || { echo "Could not fetch $tag from $src." >&2; exit 1; }
 rm -rf template && mkdir template
 (cd "$tmp/src" && git archive HEAD) | tar -x -C template
-# The starter kit and the template repository's own CI are not part of the template.
-rm -rf template/starter template/.github template/new-cv.sh
+# The starter kit, the template repository's own CI and its README images are not part of the template.
+rm -rf template/starter template/.github template/docs template/new-cv.sh
 sed -i.bak "s|^version = \"[^\"]*\"|version = \"$tag\"|" cv.toml && rm -f cv.toml.bak
 echo "template/ is now $tag from $src."
