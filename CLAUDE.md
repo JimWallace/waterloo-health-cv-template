@@ -13,7 +13,8 @@ release of the root in their `template/` directory.
   feature, show it in the example.
 - **The interface in `README.md` is a contract.** Renaming or removing a
   command, option, category or the `icon` field breaks every CV that uses it.
-  Do it only when asked, as a new major version, with the change and what a CV
+  Do it only when asked, as a new major version (a new minor version before
+  1.0), with the change and what a CV
   must do in `CHANGELOG.md`, and update `starter/main.tex` in the same PR.
 - **Releases.** Every change adds a line under "Unreleased" in `CHANGELOG.md`.
   A release moves those lines under the new version, sets the same version and

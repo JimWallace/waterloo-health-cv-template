@@ -143,10 +143,12 @@ CI builds both on every pull request.
 
 ## Versions and updates
 
-Releases are git tags (`v1.0.0`) with notes in [`CHANGELOG.md`](CHANGELOG.md).
+Releases are git tags (`v0.1.0`) with notes in [`CHANGELOG.md`](CHANGELOG.md).
 The version follows the interface above: a new command or option is a minor
 release, a fix a patch, and renaming or removing anything in the interface a new
-major version. `\ProvidesPackage` in `uwhealthcv.sty` and `aprcv.sty` carries
+major version. Before 1.0 the interface is still settling, so a minor release
+(0.1 → 0.2) may rename or remove something; its CHANGELOG entry says what a CV
+must change. `\ProvidesPackage` in `uwhealthcv.sty` and `aprcv.sty` carries
 the same version.
 
 A CV keeps a copy of a release in `template/`, because Overleaf cannot use git
@@ -168,5 +170,4 @@ its header says.
 
 ## Citing
 
-Wallace, J. R. (2026). *Waterloo Faculty of Health CV template* (Version 1.0.0)
-[Computer software]. https://github.com/JimWallace/waterloo-health-cv-template
+GitHub's "Cite this repository" button reads [`CITATION.cff`](CITATION.cff).

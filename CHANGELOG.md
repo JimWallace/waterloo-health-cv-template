@@ -5,9 +5,10 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
-## v1.0.0 — 2026-11-19
+## v0.1.0 — 2026-11-19
 
-First release as its own repository.
+First release as its own repository. Pre-1.0: the interface may still change
+in a minor release; the CHANGELOG says what a CV must do when it does.
 
 - `uwhealthcv` package: the Faculty of Health CV format, tagged PDF/UA-2 and
   PDF/A-4f output (`uwhealthcv-pdfa.tex`), section markup, page-break rules.

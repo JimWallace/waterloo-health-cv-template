@@ -1,9 +1,9 @@
 # Weekly: if the template repository (cv.toml [template]) has a newer release than
 # the one in template/, open a PR that updates template/ to it
 # (scripts/update_template.sh). CV build then compiles both PDFs with the new
-# template. Minor and patch releases are labelled auto-merge; a new major
-# version can change the interface (see template/CHANGELOG.md), so it is labelled
-# needs-review.
+# template. Patch and minor releases are labelled auto-merge; a release that can
+# change the interface (a new major version, or a new minor version before 1.0;
+# see template/CHANGELOG.md) is labelled needs-review.
 name: Template update
 
 on:
@@ -37,8 +37,13 @@ jobs:
           if gh pr list --head "$branch" --state open --json number --jq '.[0].number' | grep -q .; then
             echo "A PR for $new is already open."; exit 0
           fi
+          # Breaking releases: a new major version, or before 1.0 a new minor version.
           label=auto-merge
-          [ "${current%%.*}" = "${new%%.*}" ] || label=needs-review
+          cur_mm=$(echo "$current" | cut -d. -f1,2); new_mm=$(echo "$new" | cut -d. -f1,2)
+          case "$new" in
+            v0.*) [ "$cur_mm" = "$new_mm" ] || label=needs-review ;;
+            *)    [ "${current%%.*}" = "${new%%.*}" ] || label=needs-review ;;
+          esac
           git config user.name "template-update[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -q -b "$branch"
@@ -51,6 +56,6 @@ jobs:
             --title "Update the CV template to $new" \
             --body "Updates \`template/\` from $current to $new. Release notes: https://github.com/$repo/releases/tag/$new
 
-          CV build compiles both PDFs with the new template. Labelled \`$label\`$( [ "$label" = needs-review ] && echo ': a new major version can rename or remove commands, so check the CHANGELOG for anything to change in main.tex.' )"
+          CV build compiles both PDFs with the new template. Labelled \`$label\`$( [ "$label" = needs-review ] && echo ': this release can rename or remove commands, so check the CHANGELOG for anything to change in main.tex.' )"
           # PRs made with the workflow token don't start other workflows.
           gh workflow run cv-build.yml --ref "$branch"

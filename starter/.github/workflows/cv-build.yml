@@ -36,8 +36,11 @@ jobs:
         run: python3 scripts/check_cv.py
       - name: Keep personal data out of the template
         run: |
+          # The template's own repository URL and citation file may name its author.
           family=$(python3 scripts/cvlib.py owner.family)
-          if [ -n "$family" ] && grep -rIn -i -- "$family" template/; then
+          repo=$(python3 scripts/cvlib.py template.repo)
+          if [ -n "$family" ] && grep -rIn -i --exclude=CITATION.cff -- "$family" template/ \
+               | grep -v -i -F -- "github.com/$repo"; then
             echo "::error::template/ must not contain CV data (see template/CLAUDE.md)."
             exit 1
           fi
