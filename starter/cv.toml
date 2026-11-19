@@ -20,4 +20,4 @@ openalex_author_id = ""       # e.g. "A5012345678"; resolved from name + affilia
 # Where template/ comes from. The "Template update" workflow opens a PR when a newer
 # release (git tag) exists, using: git subtree pull --prefix=template <repo> <tag> --squash
 repo = "JimWallace/waterloo-health-cv-template"
-version = "v0.1.0"            # the release in template/ now; the workflow updates it
+version = "v0.2.1"            # the release in template/ now; the workflow updates it
