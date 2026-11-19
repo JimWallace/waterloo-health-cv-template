@@ -8,10 +8,11 @@ submit for the Annual Performance Review (APR), with every review-period item
 highlighted as teaching, research, service or an award. You keep one file, not
 two.
 
-![The same CV source compiled twice: the Faculty of Health CV on the left, and the APR version on the right, with review-period publications highlighted green as research and a trainee-authored paper and teaching software marked in two colours.](docs/images/plain-vs-apr.png)
+![The same CV source compiled twice: the Faculty of Health CV on the left, and the APR version on the right, with review-period publications highlighted green as research and, in the margin, a row of three dots per entry (research, teaching, service) filled for its categories: green alone for a paper, green and yellow for a trainee-authored paper and for teaching software.](docs/images/plain-vs-apr.png)
 
 *Left: `main.tex`, the Faculty of Health CV. Right: `apr.tex`, the same content as
-the APR version. All the examples here are fictional.*
+the APR version, in the dots style (the default). All the examples here are
+fictional.*
 
 ## The APR version
 
@@ -23,7 +24,7 @@ two-year review period. The APR version shows the reviewer where each item belon
   awards and courses from that period are highlighted automatically. When the
   period moves, the highlighting moves with it.
 - **Two colours when work counts twice.** A paper with a trainee co-author is
-  research *and* supervision, and gets a bar in the second colour. Software built
+  research *and* supervision, and is marked in both colours. Software built
   for teaching can be teaching first and research second. You choose an entry's
   colours with biblatex categories (`aprteaching`, `apralsoresearch`, …).
 - **Award badges.** A paper or poster that won an award gets a rosette in the
@@ -33,9 +34,12 @@ two-year review period. The APR version shows the reviewer where each item belon
   authorship order in your field, or for course evaluation scores.
 - **Your choice of style.** Entries in two colours can be shown as a bar,
   halves, a split, a blend or dots, and the highlight strength is adjustable
-  (`apr-formatting.tex`).
+  (`apr-formatting.tex`). The default is dots: each highlighted entry gets
+  three dots in the margin (research, teaching, service), filled for the
+  categories it counts in, so two-colour work reads at a glance and survives
+  black-and-white printing as filled versus empty.
 
-![Publications in the APR version: a review-period journal article highlighted green with a teaching bar for its trainee co-author, an award rosette beside an older paper, and a trainee's award-winning poster with a filled rosette.](docs/images/apr-publications.png)
+![Publications in the APR version in the dots style: a review-period journal article highlighted green with the research and teaching dots filled for its trainee co-author, an empty award rosette beside an older paper, and a trainee's award-winning poster with a filled pink rosette before its dots.](docs/images/apr-publications.png)
 
 Grants, students, service, awards and courses are records in `.bib` files, not
 hand-made tables. They print sorted, in the Faculty's table layouts, and are
@@ -43,7 +47,7 @@ highlighted from their dates: a grant whose tenure overlaps the period, a
 student still in progress, a committee you sat on, a course you taught. The
 APR version adds your course evaluation scores beside the school averages.
 
-![Grants, supervision, service and courses in the APR version: an active grant highlighted as research, current and recently graduated students as teaching, a Faculty committee as service, and a course from the review period with its evaluation scores and the school average.](docs/images/apr-records.png)
+![Grants, supervision, service and courses in the APR version in the dots style: an active grant highlighted as research, current and recently graduated students as teaching, a Faculty committee as service, a General Chair role with both the service and research dots filled, and a course from the review period with its evaluation scores and the school average.](docs/images/apr-records.png)
 
 The PDFs are tagged (PDF/UA-2, so screen readers get headings, lists and
 tables) and archival (PDF/A-4f).

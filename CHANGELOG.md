@@ -5,6 +5,17 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+## v0.4.1 — 2026-11-19
+
+Nothing for a CV to change: the dots style is now the example's and the
+starter's default, and the README shows it.
+
+- README: the screenshots show the APR version in the dots style, and the text
+  and alt text describe the dots.
+- The example and the starter use the dots style (`\sethighlightstyle{dots}`
+  in `apr-formatting.tex`) instead of the bar. An existing CV keeps its own
+  setting.
+
 ## v0.4.0 — 2026-11-19
 
 Additions only: nothing for a CV to change.
