@@ -8,6 +8,8 @@ fixes, major for anything renamed or removed (with what a CV must change).
 - README: what the template and the APR version do, with screenshots from the
   starter CV (`docs/images/`, not copied into a CV's `template/`), and the
   agentic workflow in `starter/`.
+- Release workflow: tags a version and publishes its CHANGELOG section as the
+  release notes (Actions → Release).
 
 ## v0.1.0 — 2026-11-19
 
