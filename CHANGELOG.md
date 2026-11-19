@@ -8,6 +8,17 @@ fixes, major for anything renamed or removed (with what a CV must change).
 - README: what the template and the APR version do, with screenshots from the
   starter CV (`docs/images/`, not copied into a CV's `template/`), and the
   agentic workflow in `starter/`.
+
+## v0.2.0 — 2026-11-19
+
+Changes made in a CV's own copy of the template while v0.1.0 was being split
+out, now released here. Additions only: nothing for a CV to change.
+
+- `@supervision`: optional `program` field, printed in parentheses after the
+  student's name ("Sam Student (Computer Science), …").
+- `@service`: optional `note`, printed under the line in italics.
+- `\aprlinemark`: in a highlighted entry, ends the highlight of a line that a
+  forced break ends early, so a noted entry's first line stops at its text.
 - Release workflow: tags a version and publishes its CHANGELOG section as the
   release notes (Actions → Release).
 
