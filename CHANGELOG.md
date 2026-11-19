@@ -5,6 +5,9 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+- README: the screenshots show the APR version in the dots style, and the text
+  and alt text describe the dots.
+
 ## v0.4.0 — 2026-11-19
 
 Additions only: nothing for a CV to change.
