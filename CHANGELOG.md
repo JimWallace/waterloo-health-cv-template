@@ -7,6 +7,9 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 - README: the screenshots show the APR version in the dots style, and the text
   and alt text describe the dots.
+- The example and the starter use the dots style (`\sethighlightstyle{dots}`
+  in `apr-formatting.tex`) instead of the bar. An existing CV keeps its own
+  setting.
 
 ## v0.4.0 — 2026-11-19
 

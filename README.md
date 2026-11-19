@@ -11,8 +11,8 @@ two.
 ![The same CV source compiled twice: the Faculty of Health CV on the left, and the APR version on the right, with review-period publications highlighted green as research and, in the margin, a row of three dots per entry (research, teaching, service) filled for its categories: green alone for a paper, green and yellow for a trainee-authored paper and for teaching software.](docs/images/plain-vs-apr.png)
 
 *Left: `main.tex`, the Faculty of Health CV. Right: `apr.tex`, the same content as
-the APR version, in the dots style (`\sethighlightstyle{dots}`). All the examples
-here are fictional.*
+the APR version, in the dots style (the default). All the examples here are
+fictional.*
 
 ## The APR version
 
@@ -34,7 +34,7 @@ two-year review period. The APR version shows the reviewer where each item belon
   authorship order in your field, or for course evaluation scores.
 - **Your choice of style.** Entries in two colours can be shown as a bar,
   halves, a split, a blend or dots, and the highlight strength is adjustable
-  (`apr-formatting.tex`). The screenshots use dots: each highlighted entry gets
+  (`apr-formatting.tex`). The default is dots: each highlighted entry gets
   three dots in the margin (research, teaching, service), filled for the
   categories it counts in, so two-colour work reads at a glance and survives
   black-and-white printing as filled versus empty.
