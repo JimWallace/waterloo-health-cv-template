@@ -66,7 +66,7 @@
 %% latexmk do this automatically).
 
 \NeedsTeXFormat{LaTeX2e}[2020/10/01]
-\ProvidesPackage{aprcv}[2026/11/19 v0.1.0 APR highlighting for Faculty of Health CVs]
+\ProvidesPackage{aprcv}[2026/11/19 v0.2.0 APR highlighting for Faculty of Health CVs]
 
 \newif\ifAPR
 \DeclareOption{apr}{\APRtrue}
@@ -189,6 +189,10 @@
   \ifnum#1>\apr@maxid \global\apr@maxid=#1\relax\fi}
 \def\aprE#1#2#3#4{%
   \expandafter\gdef\csname apr@E@#1\endcsname{{#2}{#3}{#4}}}
+% \aprB{id}{x}{y}: where an entry's line ends before a forced line break
+% (\aprlinemark), so that line is painted only as far as its text
+\def\aprB#1#2#3{%
+  \expandafter\gdef\csname apr@B@#1\endcsname{{#2}{#3}}}
 
 % \apr@mark@start{primary colour}{secondary colour or empty}; primary may be
 % empty for an entry that is not highlighted but has a marker (an award
@@ -233,6 +237,15 @@
       {\the\dimexpr 1in+\hoffset+\oddsidemargin+\@totalleftmargin\relax}%
       {\the\linewidth}{\the\ht\strutbox}{\the\dp\strutbox}}}%
   \apr@tmp}
+% \aprlinemark: in a highlighted bibliography entry, mark the end of a line
+% that a forced break (\newline) ends early; elsewhere it does nothing
+\newcommand\aprlinemark{%
+  \ifAPR\ifdefined\apr@bib@on\ifx\apr@bib@on\@empty\else
+    \pdfsavepos
+    \edef\apr@tmp{\write\@auxout{%
+      \string\aprB{\apr@cur}{\noexpand\the\pdflastxpos}{\noexpand\the\pdflastypos}}}%
+    \apr@tmp
+  \fi\fi\fi}
 \newcommand\apr@mark@end{%
   \unskip
   \pdfsavepos
@@ -254,6 +267,8 @@
 \newdimen\apr@yk \newdimen\apr@top \newdimen\apr@bot
 \newdimen\apr@gl \newdimen\apr@gr \newdimen\apr@mid \newdimen\apr@cut
 \newdimen\apr@ra \newdimen\apr@rb \newdimen\apr@rw \newdimen\apr@rh
+\newdimen\apr@xb \newdimen\apr@yb \newif\ifapr@hasb
+\newdimen\apr@lr \newdimen\apr@ld % a line's right edge; its distance from \apr@yb
 
 % \apr@rect{left}{bottom}{right}{top}{colour}
 \def\apr@rect#1#2#3#4#5{%
@@ -334,9 +349,17 @@
     \begingroup
     \loop
       \apr@yk=\dimexpr\apr@ys-\apr@s*\apr@k\relax
+      % right edge: the end mark on the last line; on a line ended early by
+      % \aprlinemark, that mark; otherwise the full line
+      \apr@lr=\apr@R
+      \ifnum\apr@k=\apr@n \apr@lr=\apr@xe \else\ifapr@hasb
+        \apr@ld=\dimexpr\apr@yk-\apr@yb\relax
+        \ifdim\apr@ld<\z@ \apr@ld=-\apr@ld \fi
+        \ifdim\apr@ld<\dimexpr\apr@s/2\relax \apr@lr=\apr@xb \fi
+      \fi\fi
       \apr@band
         {\ifnum\apr@k=\z@\apr@xs\else\apr@L\fi-\apr@bleed}%
-        {\ifnum\apr@k=\apr@n\apr@xe\else\apr@R\fi+\apr@bleed}%
+        {\apr@lr+\apr@bleed}%
         {\apr@yk-\apr@Ds}{\apr@yk+\apr@Hs}%
     \ifnum\apr@k<\apr@n \advance\apr@k\@ne \repeat
     \endgroup
@@ -429,9 +452,15 @@
     \apr@slot=\apr@badgew \apr@onpagetrue
     \apr@H=#7\relax \apr@D=#8\relax
     \apr@setcols#4{}{}{}{}{}{}\@nil
+    \apr@hasbfalse
+    \ifcsname apr@B@#9\endcsname
+      \expandafter\expandafter\expandafter\apr@setB
+        \csname apr@B@#9\endcsname
+    \fi
     \expandafter\expandafter\expandafter\apr@draw@E
       \csname apr@E@#9\endcsname
   \fi}
+\def\apr@setB#1#2{\apr@xb=#1sp\relax \apr@yb=#2sp\relax \apr@hasbtrue}
 \def\apr@draw@E#1#2#3{%
   \ifnum#1=\ReadonlyShipoutCounter
     \apr@xe=#2sp\relax \apr@ye=#3sp\relax
