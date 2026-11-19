@@ -5,6 +5,10 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+## v0.4.0 — 2026-11-19
+
+Additions only: nothing for a CV to change.
+
 - `@committee` records for thesis and examination committees, with
   `\printcommitteecounts{MSc, PhD}` (one line per year: "2026 --- 4 MSc,
   6 PhD", counted from the records' dates) and `\printcommittees[period]{PhD}`
