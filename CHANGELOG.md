@@ -5,6 +5,10 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+- Starter: the Template update workflow opens an issue with a one-click PR link
+  when the repository doesn't allow workflows to open pull requests, instead
+  of failing.
+
 ## v0.3.0 — 2026-11-19
 
 One addition: nothing for a CV to change.

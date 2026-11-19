@@ -4,6 +4,11 @@
 # template. Patch and minor releases are labelled auto-merge; a release that can
 # change the interface (a new major version, or a new minor version before 1.0;
 # see template/CHANGELOG.md) is labelled needs-review.
+#
+# If GitHub won't let workflows open pull requests (Settings → Actions → General →
+# "Allow GitHub Actions to create and approve pull requests" is off), the branch is
+# still pushed and built, and an issue gives a one-click link that opens the PR with
+# its title, description and label filled in.
 name: Template update
 
 on:
@@ -14,6 +19,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write   # the fallback issue
   actions: write
 
 jobs:
@@ -52,10 +58,34 @@ jobs:
           git push -q --force origin "$branch"
           repo=$(python3 scripts/cvlib.py template.repo)
           gh label create "$label" --force >/dev/null 2>&1 || true
-          gh pr create --head "$branch" --base main --label "$label" \
-            --title "Update the CV template to $new" \
-            --body "Updates \`template/\` from $current to $new. Release notes: https://github.com/$repo/releases/tag/$new
+          title="Update the CV template to $new"
+          note=""; review=""
+          if [ "$label" = needs-review ]; then
+            note=": this release can rename or remove commands, so check the CHANGELOG for anything to change in main.tex."
+            review=", which holds the PR for your review (a PR you open yourself otherwise merges once CI passes)"
+          fi
+          body="Updates \`template/\` from $current to $new. Release notes: https://github.com/$repo/releases/tag/$new
 
-          CV build compiles both PDFs with the new template. Labelled \`$label\`$( [ "$label" = needs-review ] && echo ': this release can rename or remove commands, so check the CHANGELOG for anything to change in main.tex.' )"
+          CV build compiles both PDFs with the new template. Labelled \`$label\`$note."
+          if ! gh pr create --head "$branch" --base main --label "$label" --title "$title" --body "$body" 2>pr-error.txt; then
+            cat pr-error.txt
+            grep -q "not permitted to create or approve pull requests" pr-error.txt || exit 1
+            # Fallback: an issue with a link that opens the PR, title, body and label filled in.
+            link=$(TITLE="$title" BODY="$body" LABEL="$label" BRANCH="$branch" python3 -c 'import os, urllib.parse as u; print("https://github.com/" + os.environ["GH_REPO"] + "/compare/main..." + u.quote(os.environ["BRANCH"], safe="/") + "?" + u.urlencode({"expand": "1", "title": os.environ["TITLE"], "body": os.environ["BODY"], "labels": os.environ["LABEL"]}))')
+            ititle="Template $new is ready: open its pull request"
+            ibody="The Template update workflow updated \`template/\` to $new on the branch \`$branch\`, but GitHub doesn't let workflows open pull requests in this repository.
+
+          **[Open the pull request]($link)**. Its title, description and the \`$label\` label are filled in; keep the label$review.
+
+          CV build is already running on the branch. To let the workflow open these PRs itself: Settings → Actions → General → Workflow permissions → tick \"Allow GitHub Actions to create and approve pull requests\" → Save. Close this issue once the PR is open."
+            gh label create template-update --color 5319E7 --force >/dev/null 2>&1 || true
+            existing=$(gh issue list --state open --label template-update --search "in:title \"$ititle\"" --json number --jq '.[0].number')
+            if [ -n "$existing" ]; then
+              gh issue edit "$existing" --body "$ibody"
+            else
+              gh issue create --title "$ititle" --label template-update --body "$ibody"
+            fi
+            echo "::warning::Workflows can't open pull requests here; opened an issue with a link to open it instead."
+          fi
           # PRs made with the workflow token don't start other workflows.
           gh workflow run cv-build.yml --ref "$branch"
