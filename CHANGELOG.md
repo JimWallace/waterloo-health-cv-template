@@ -5,6 +5,9 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+- Release workflow: tags a version and publishes its CHANGELOG section as the
+  release notes (Actions → Release).
+
 ## v0.1.0 — 2026-11-19
 
 First release as its own repository. Pre-1.0: the interface may still change
