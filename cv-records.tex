@@ -40,6 +40,7 @@
 
 \DeclareFieldFormat{cvplain}{#1}
 \DeclareFieldFormat{cvcosupervisor}{\mkbibparens{co-supervised with #1}}
+\DeclareFieldFormat{cvservicenote}{\mkbibemph{#1}}
 
 %% ----------------------------------------------------------------- grants
 % The grants print as a longtable, like a hand-made table: headings repeat
@@ -164,10 +165,12 @@
   \ifcase#1\or January\or February\or March\or April\or May\or June\or
   July\or August\or September\or October\or November\or December\fi}
 
-% Name, date (or status), Title. Note (co-supervised with X) [Position]
+% Name (Program), date (or status), Title. Note (co-supervised with X) [Position]
 \DeclareBibliographyDriver{supervision}{%
   \usebibmacro{begentry}%
   \printnames[cvfull]{author}%
+  \setunit{\space}%
+  \printfield[parens]{program}%
   \setunit{\addcomma\space}%
   \iffieldint{year}
     {\printtext{%
@@ -246,7 +249,7 @@
 
 % Title Years Role: the years field as written, else the date as
 % 2023 -- 2025 (an open-ended date, 2021/, prints 2021 -- Present); the role,
-% if any, after them
+% if any, after them; the note, if any, on the next line in italics
 \DeclareBibliographyDriver{service}{%
   \usebibmacro{begentry}%
   \printfield[cvplain]{title}%
@@ -264,6 +267,9 @@
     {\printfield[cvplain]{years}}%
   \setunit{\space}%
   \printfield[cvplain]{role}%
+  \iffieldundef{note}{}{\aprlinemark}%
+  \setunit{\newline}%
+  \printfield[cvservicenote]{note}%
   \usebibmacro{finentry}}
 
 % An open-ended date (2021/) has an empty end year, which biber would sort as

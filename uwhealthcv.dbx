@@ -19,7 +19,9 @@
 %   date           completion: 2022, or 2024-11 to print the month
 %   status         instead of a date while ongoing: In progress
 %   title          thesis, project or practicum title
-%   note           programme or practicum details
+%   program        optional: the student's graduate program, printed in
+%                  parentheses after the name (Computer Science)
+%   note           practicum or other details
 %   cosupervisor   printed as "(co-supervised with ...)"
 %   position       where they went next, printed in brackets
 %
@@ -41,6 +43,8 @@
 %   years          optional: the years as printed, when the date range would
 %                  not say it right (2017, 2019 -- 2021)
 %   role           optional: printed after the years (General Chair)
+%   note           optional: printed under the line, in italics (what the role
+%                  involved, or a load such as 12 submissions)
 %
 % @course: one course offering (one row of the COURSES TAUGHT table).
 %   course         the course number(s) as printed: HLTH 454/629
@@ -69,6 +73,7 @@
   status,
   position,
   cosupervisor,
+  program,
   work,
   level,
   years,
@@ -92,6 +97,7 @@
   status,
   title,
   note,
+  program,
   cosupervisor,
   position,
 }
@@ -106,6 +112,7 @@
   level,
   years,
   role,
+  note,
 }
 \DeclareDatamodelEntryfields[course]{
   course,

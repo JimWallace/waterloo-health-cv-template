@@ -110,7 +110,7 @@ every CV that uses the template.
 
 - Package: `uwhealthcv` (options `apr`, `plain`), `aprcv` (options `apr`, `plain`).
 - Commands: `\setreviewperiod`, `\hlteaching`, `\hlresearch`, `\hlservice`,
-  `\hlaward`, `\hlboth`, `\hl…row`, `\aprsample`, `\ifAPR`,
+  `\hlaward`, `\hlboth`, `\hl…row`, `\aprsample`, `\aprlinemark`, `\ifAPR`,
   `\sethighlightstrength`, `\sethighlightstyle`, `\keepwithnext`,
   `\sectionbreak`, `\usvardate`, `\monthyear`, `\extlink`.
 - Section markup: `\cvsection`, `\cvsubheading`, `cvlist` and `cvbulletlist` with `\cvitem`, `cvgroup`, `cvparts`
