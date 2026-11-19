@@ -5,6 +5,14 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+## v0.4.2 — 2026-11-19
+
+A fix: nothing for a CV to change.
+
+- `\printcommitteecounts` left out the earliest years when only named
+  committees covered them (it took the first year after a committee's
+  range was counted). The example now has such a year.
+
 ## v0.4.1 — 2026-11-19
 
 Nothing for a CV to change: the dots style is now the example's and the

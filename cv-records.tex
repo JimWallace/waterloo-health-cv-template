@@ -403,12 +403,13 @@
   \iffieldint{year}{%
     \edef\cv@g{\cv@groupof{\thefield{degree}}}%
     \cv@yearsof
-    \iffieldint{count}%
-      {\cv@until=\cv@from
-       \cv@cadd{cv@co@\the\cv@ccall @\cv@g @\the\cv@from}{\thefield{count}}}%
-      {\cv@countyears}%
+    \iffieldint{count}{\cv@until=\cv@from}{}%
+    % the range of years to print, before \cv@countyears moves \cv@from on
     \ifnum\cv@from<\cv@cmin \global\cv@cmin=\cv@from \fi
-    \ifnum\cv@until>\cv@cmax \global\cv@cmax=\cv@until \fi}{}}
+    \ifnum\cv@until>\cv@cmax \global\cv@cmax=\cv@until \fi
+    \iffieldint{count}%
+      {\cv@cadd{cv@co@\the\cv@ccall @\cv@g @\the\cv@from}{\thefield{count}}}%
+      {\cv@countyears}}{}}
 \def\cv@countyears{%
   \ifnum\cv@from>\cv@until\else
     \cv@cadd{cv@cn@\the\cv@ccall @\cv@g @\the\cv@from}{1}%
