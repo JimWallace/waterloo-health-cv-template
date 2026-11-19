@@ -217,6 +217,7 @@ every CV that uses the template.
 - biblatex categories: `aprteaching`, `aprservice`, `apraward`, `aprnone`,
   `aprinclude`, `apralsoteaching`, `apralsoresearch`, `apralsoservice`,
   `apralsoaward`.
+- Per-entry detail line: `\setentrydetail{key}{text}` (`biblatex-formatting.tex`).
 - Bib field: `icon` (an image path, or `award` for the rosette).
 - File the template reads from the CV: `apr-formatting.tex` (optional).
 - File a CV inputs before `\documentclass`: `uwhealthcv-pdfa.tex` (optional).

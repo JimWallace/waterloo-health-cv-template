@@ -50,6 +50,20 @@
 }
 
 
+% \setentrydetail{key}{text}: a line of small text printed under one
+% bibliography entry, after its final full stop (e.g. a software entry's
+% releases, commits and lines of code). Kept outside the .bib so a script can
+% regenerate it without touching the entry. In the APR version the line is
+% part of the entry, so it takes the entry's highlighting (\aprlinemark ends
+% the first line's highlight at its text).
+\newcommand\setentrydetail[2]{\csgdef{cv@detail@#1}{#2}}
+\renewbibmacro*{finentry}{%
+    \finentry
+    \edef\cv@detailkey{\thefield{entrykey}}%
+    \ifcsdef{cv@detail@\cv@detailkey}
+      {\aprlinemark\newline{\small\csuse{cv@detail@\cv@detailkey}}}%
+      {}}
+
 % Redefine the bibliography driver for the "inproceedings" type
 \DeclareBibliographyDriver{inproceedings}{%
   \usebibmacro{bibindex}%

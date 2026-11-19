@@ -5,6 +5,10 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+- `\setentrydetail{key}{text}`: a line of small text under one bibliography
+  entry (e.g. a software entry's releases, commits and lines of code), kept
+  outside the .bib so a script can regenerate it. Shown in the example.
+
 ## v0.2.1 — 2026-11-19
 
 Documentation only: nothing for a CV to change.
