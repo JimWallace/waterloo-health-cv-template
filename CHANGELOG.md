@@ -5,6 +5,9 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+- Release workflow: check CI through the commit's check runs (the run-search
+  query missed a passing run).
+
 - `\setentrydetail{key}{text}`: a line of small text under one bibliography
   entry (e.g. a software entry's releases, commits and lines of code), kept
   outside the .bib so a script can regenerate it. Shown in the example.

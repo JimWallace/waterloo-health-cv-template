@@ -20,6 +20,8 @@ on:
 
 permissions:
   contents: write
+  checks: read   # the commit's CI results
+  actions: read
 
 jobs:
   release:
@@ -44,10 +46,18 @@ jobs:
           awk -v v="$VERSION" '$0 ~ "^## "v" " {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
           [ -s notes.md ] || { echo "::error file=CHANGELOG.md::no section for $VERSION"; exit 1; }
       - name: CI passed on this commit
+        # The commit's own check runs are the record of what passed on it. (Filtering
+        # workflow runs by head_sha and status missed a green run for v0.2.1, twice.)
         run: |
           sha=$(git rev-parse HEAD)
-          ok=$(gh api "repos/$GH_REPO/actions/workflows/ci.yml/runs?head_sha=$sha&status=success" --jq '.total_count')
-          [ "$ok" -gt 0 ] || { echo "::error::No successful CI run for $sha; wait for CI, or fix it first."; exit 1; }
+          passed=$(gh api "repos/$GH_REPO/commits/$sha/check-runs?per_page=100" --jq \
+            '[.check_runs[] | select(.app.slug == "github-actions" and (.name == "starter-checks" or .name == "compile") and .conclusion == "success") | .name] | unique | length')
+          if [ "$passed" -lt 2 ]; then
+            gh api "repos/$GH_REPO/commits/$sha/check-runs?per_page=100" --jq '.check_runs[] | "\(.name): \(.status) \(.conclusion)"' || true
+            echo "::error::CI's starter-checks and compile have not both passed on $sha; wait for CI, or fix it first."
+            exit 1
+          fi
+          echo "CI passed on $sha (starter-checks, compile)."
       - name: Tag and publish
         run: |
           git config user.name "github-actions[bot]"
