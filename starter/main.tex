@@ -17,6 +17,7 @@
 \addbibresource{service.bib}
 \addbibresource{activities.bib}
 \addbibresource{courses.bib}
+\addbibresource{committees.bib}
 \setreviewperiod{2025}{2026}
 \cvowner{Robin Quill}
 
@@ -80,19 +81,22 @@ PhD                & University of Waterloo   & 2010 -- 2015 \\
 \cvsubheading{Conference Organizing Committee:}
     \printservice{organizing}
 
-% cvbulletlist: the same layout with bullets, for entries that run to two
-% lines; cvgroup puts a label (here the degree) in the left column, list below
+% @committee records in committees.bib: \printcommitteecounts counts them by
+% year; \printcommittees lists the named ones (APR version: those in the
+% review period). MASc counts with MSc.
+\cvcommitteegroup{MSc}{MSc, MASc}
 \cvsubheading{Thesis Committees:}
+    \printcommitteecounts{MSc, PhD}
+
+\ifAPR % APR version only: the named committees
+\cvsubheading{Committees in the review period:}
 \begin{cvgroup}{PhD}
-\begin{cvbulletlist}
-    \cvitem \hlteaching[2026]{A. Student (PhD, Example Sciences; defended 2026). \textit{A Longer Thesis Title That Runs On to a Second Line to Show Why the Bullets Help the Reader}}
-\end{cvbulletlist}
+    \printcommittees[period]{PhD}
 \end{cvgroup}
 \begin{cvgroup}{MSc}
-\begin{cvbulletlist}
-    \cvitem A. N. Other (MSc, Example Studies; 2019). \textit{A Shorter Thesis Title}
-\end{cvbulletlist}
+    \printcommittees[period]{MSc}
 \end{cvgroup}
+\fi
 
 \ifAPR % APR version only ------------------------------------------
 \sectionbreak

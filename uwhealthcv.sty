@@ -22,7 +22,8 @@
 %%   biblatex (ACM style)     with biblatex-formatting.tex
 %%   aprcv.sty                APR highlighting; reads the CV's own
 %%                            apr-formatting.tex, if present
-%%   cv-records.tex           grants and supervision as biblatex records
+%%   cv-records.tex           grants, supervision, committees and other
+%%                            records as biblatex entries
 %%                            (data model: uwhealthcv.dbx)
 %%   cv-layout.tex            page-break rules (\keepwithnext, \sectionbreak)
 %%
@@ -30,7 +31,7 @@
 %% directory adds it (Overleaf and CI read that file too).
 
 \NeedsTeXFormat{LaTeX2e}[2020/10/01]
-\ProvidesPackage{uwhealthcv}[2026/11/19 v0.3.0 Faculty of Health CV format]
+\ProvidesPackage{uwhealthcv}[2026/11/19 v0.4.0 Faculty of Health CV format]
 
 \DeclareOption{apr}{\PassOptionsToPackage{apr}{aprcv}}
 \DeclareOption{plain}{\PassOptionsToPackage{plain}{aprcv}}

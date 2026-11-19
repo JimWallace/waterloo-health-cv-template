@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Deterministic checks on scholar.bib, grants.bib, supervision.bib, awards.bib, service.bib,
-activities.bib, courses.bib and the category lists in main.tex.
+activities.bib, courses.bib, committees.bib and the category lists in main.tex.
 
 Errors change what the PDF says (a paper silently dropped or printed twice)
 and fail CI. Warnings are worth a look; the ones accepted so far are listed in
@@ -199,7 +199,8 @@ def run(only: set[str] | None = None) -> dict:
     }
 
 
-RECORD_FILES = ["grants.bib", "supervision.bib", "awards.bib", "service.bib", "activities.bib", "courses.bib"]
+RECORD_FILES = ["grants.bib", "supervision.bib", "awards.bib", "service.bib", "activities.bib", "courses.bib",
+                "committees.bib"]
 GRANT_ROLES = {"PI", "Co-PI", "Co-I", "Co-A"}
 DATE_RE = re.compile(r"^\d{4}(-\d{2})?(/\d{4}(-\d{2})?)?$")
 # Course evaluation scores: Item=score pairs, comma-separated, scores out of 5
@@ -207,7 +208,9 @@ SCORES_RE = re.compile(r"^[^=,]*[^=,\s]=[0-5](\.\d+)?(\s*,\s*[^=,]*[^=,\s]=[0-5]
 
 
 def check_records(records: dict, main_tex: str, err, warn) -> None:
-    """Grants, supervision, service and courses: fields the template needs, in the form it reads."""
+    """Grants, supervision, service, courses and committees: fields the template needs, in the
+    form it reads."""
+    check_committees(records, main_tex, err)
     for e in records["grants.bib"].entries:
         f, where = e.fields, f"grants.bib:{e.line}"
         if e.type != "grant":
@@ -280,6 +283,40 @@ def check_records(records: dict, main_tex: str, err, warn) -> None:
             if f.get(k) and not SCORES_RE.match(f[k]):
                 err("E-record", f"{where}: course '{e.key}' {k} '{f[k]}' should be Item=score pairs "
                     "out of 5, comma-separated, no spaces around = (Implementation=4.5, Design=4.6)", e.key)
+
+def check_committees(records: dict, main_tex: str, err) -> None:
+    """committees.bib: a named committee (author) or a count-only record (count), a degree
+    that a \\printcommitteecounts in main.tex counts, and a date the template reads."""
+    groups = {}
+    for g, degrees in re.findall(r"^[^%\n]*\\cvcommitteegroup\{([^}]*)\}\{([^}]*)\}", main_tex, re.M):
+        for d in degrees.split(","):
+            groups[d.strip()] = g.strip()
+    counted = {g.strip() for call in re.findall(r"^[^%\n]*\\printcommitteecounts\{([^}]*)\}", main_tex, re.M)
+               for g in call.split(",")}
+    for e in records["committees.bib"].entries:
+        f, where = e.fields, f"committees.bib:{e.line}"
+        if e.type != "committee":
+            err("E-record", f"{where}: '{e.key}' is @{e.type}; committees.bib holds @committee entries", e.key)
+            continue
+        degree = f.get("degree", "")
+        if not degree:
+            err("E-record", f"{where}: committee '{e.key}' has no degree", e.key)
+        elif groups.get(degree, degree) not in counted:
+            err("E-record", f"{where}: committee '{e.key}' has degree '{degree}', which no "
+                "\\printcommitteecounts in main.tex counts (add it to a \\cvcommitteegroup?)", e.key)
+        if bool(f.get("author")) == bool(f.get("count")):
+            err("E-record", f"{where}: committee '{e.key}' needs exactly one of author (a named "
+                "committee) or count (the number for a year with no names)", e.key)
+        if f.get("count"):
+            if not f["count"].isdigit():
+                err("E-record", f"{where}: committee '{e.key}' count '{f['count']}' must be digits only", e.key)
+            if not re.fullmatch(r"\d{4}", f.get("date", "")):
+                err("E-record", f"{where}: count-only committee '{e.key}' date '{f.get('date', '')}' "
+                    "should be the year, YYYY", e.key)
+        elif not re.fullmatch(r"\d{4}(/(\d{4})?)?", f.get("date", "")):
+            err("E-record", f"{where}: committee '{e.key}' date '{f.get('date', '')}' should be the years "
+                "served: YYYY, YYYY/YYYY, or YYYY/ while ongoing", e.key)
+
 
 AWARD_ICONS = {"award", "images/hm.png"}
 

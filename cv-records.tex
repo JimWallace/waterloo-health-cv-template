@@ -1,4 +1,5 @@
-% Grants and supervision as biblatex records (data model: uwhealthcv.dbx).
+% Grants, supervision, committees, awards, service and courses as biblatex
+% records (data model: uwhealthcv.dbx).
 % Part of the template, loaded by uwhealthcv.sty after aprcv.sty. The CV
 % keeps the records in .bib files and prints them with:
 %
@@ -9,6 +10,11 @@
 %   \printsupervision{PhD}       one numbered list of students under a
 %                                degree label: completed by date, then
 %                                those in progress, by family name
+%   \printcommitteecounts{MSc, PhD}
+%                                thesis committees: one line per year with
+%                                the number in each group (see the
+%                                committees part below, which also has
+%                                \printcommittees and \cvcommitteegroup)
 %   \printawards                 ACADEMIC AWARDS AND DISTINCTIONS: newest
 %                                first, in file order within a year
 %   \printservice{school}        one list of @service records: those whose
@@ -278,6 +284,7 @@
   \maps[datatype=bibtex]{
     \map{
       \pertype{service}
+      \pertype{committee}
       \step[fieldsource=date, match=\regexp{/\s*\Z}, final]
       \step[fieldset=userf, fieldvalue={open}]
     }
@@ -311,6 +318,175 @@
   \begin{refcontext}[sorting=cvservice]%
     \printbibliography[type=service,check=cvlevel,env=cvawards,heading=none]%
   \end{refcontext}}
+
+%% ------------------------------------------------------------- committees
+% @committee records: thesis and examination committees for students the
+% owner doesn't supervise. One record per student (a date range for the years
+% served), or a count-only record (count, no author) for a year whose
+% committees aren't listed by name.
+%
+%   \cvcommitteegroup{MSc}{MSc, MASc, MMath}
+%                                committees for these degrees are counted and
+%                                listed under MSc (a degree in no group is a
+%                                group of its own)
+%   \printcommitteecounts{MSc, PhD}
+%                                one line per year, newest first, with the
+%                                number of committees served on that year in
+%                                each group, in the order given: "2026 --- 4
+%                                MSc, 6 PhD". A committee counts in every year
+%                                of its date range (an open range, 2023/, runs
+%                                to the current year). Count-only records for
+%                                a year and group give that year's number
+%                                instead (their counts are added up), so years
+%                                with no names can sit beside years with them.
+%                                A group with none that year is left out.
+%   \printcommittees{PhD}        the named committees in one group, as a
+%   \printcommittees[period]{PhD} bulleted list, most recent first (ongoing,
+%                                then by end year); [period]: only those whose
+%                                years overlap the review period
+%
+% In the APR version a year line in the review period, and a named committee
+% whose years overlap it, are highlighted as teaching. Add a record's key to
+% apralsoservice for a second colour (e.g. chairing an examination).
+\aprtypecategory{committee}{teaching}
+
+\newcommand\cvcommitteegroup[2]{\forcsvlist{\cv@setcommitteegroup{#1}}{#2}}
+\newcommand\cv@setcommitteegroup[2]{\csdef{cv@cgroup@#2}{#1}}
+% \cv@groupof{degree}: the degree's group (expandable)
+\newcommand\cv@groupof[1]{\ifcsdef{cv@cgroup@#1}{\csuse{cv@cgroup@#1}}{#1}}
+
+\DeclareFieldFormat{cvcommitteetitle}{\mkbibemph{#1}}
+
+% Name (Degree, Program; role, note). Title
+\newif\ifcv@counting
+\DeclareBibliographyDriver{committee}{%
+  \ifcv@counting
+    \cv@countentry
+  \else
+    \usebibmacro{begentry}%
+    \printnames[cvfull]{author}%
+    \setunit{\space}%
+    \printtext[parens]{%
+      \printfield[cvplain]{degree}%
+      \setunit{\addcomma\space}%
+      \printfield[cvplain]{program}%
+      \setunit{\addsemicolon\space}%
+      \printfield[cvplain]{role}%
+      \iffieldundef{role}{}{\setunit{\addcomma\space}}%
+      \printfield[cvplain]{note}}%
+    \setunit{\addperiod\space}%
+    \printfield[cvcommitteetitle]{title}%
+    \usebibmacro{finentry}%
+  \fi}
+
+% \cv@yearsof: sets \cv@from and \cv@until to the entry's first and last
+% year (an open range ends in the current year)
+\newcount\cv@from \newcount\cv@until
+\newcommand\cv@yearsof{%
+  \cv@from=\thefield{year}\relax
+  \cv@until=\cv@from
+  \iffieldundef{endyear}{}{%
+    \iffieldequalstr{endyear}{}%
+      {\cv@until=\year}%
+      {\cv@until=\thefield{endyear}\relax}}}
+
+% counts are kept per call of \printcommitteecounts, in
+% \cv@cn@<call>@<group>@<year> (named) and \cv@co@<call>@<group>@<year>
+% (count-only records)
+\newcount\cv@ccall
+\newcount\cv@cmin \newcount\cv@cmax
+\newcommand\cv@cadd[2]{%
+  \ifcsdef{#1}%
+    {\csxdef{#1}{\the\numexpr\csuse{#1}+#2\relax}}%
+    {\csxdef{#1}{\the\numexpr#2\relax}}}
+\newcommand\cv@countentry{%
+  \iffieldint{year}{%
+    \edef\cv@g{\cv@groupof{\thefield{degree}}}%
+    \cv@yearsof
+    \iffieldint{count}%
+      {\cv@until=\cv@from
+       \cv@cadd{cv@co@\the\cv@ccall @\cv@g @\the\cv@from}{\thefield{count}}}%
+      {\cv@countyears}%
+    \ifnum\cv@from<\cv@cmin \global\cv@cmin=\cv@from \fi
+    \ifnum\cv@until>\cv@cmax \global\cv@cmax=\cv@until \fi}{}}
+\def\cv@countyears{%
+  \ifnum\cv@from>\cv@until\else
+    \cv@cadd{cv@cn@\the\cv@ccall @\cv@g @\the\cv@from}{1}%
+    \advance\cv@from\@ne
+    \expandafter\cv@countyears
+  \fi}
+
+\newcount\cv@cy
+% \cv@countgroup{group}: add "N group" to \cv@line for year \cv@cy
+\newcommand\cv@countgroup[1]{%
+  \edef\cv@tmp{\the\cv@ccall @#1@\the\cv@cy}%
+  \ifcsdef{cv@co@\cv@tmp}%
+    {\edef\cv@n{\csuse{cv@co@\cv@tmp}}}%
+    {\ifcsdef{cv@cn@\cv@tmp}{\edef\cv@n{\csuse{cv@cn@\cv@tmp}}}{\def\cv@n{0}}}%
+  \ifnum\cv@n>\z@
+    \ifx\cv@line\@empty\else\appto\cv@line{, }\fi
+    \eappto\cv@line{\cv@n\space#1}%
+  \fi}
+
+\newcommand\printcommitteecounts[1]{%
+  \begingroup
+  \global\advance\cv@ccall\@ne
+  \global\cv@cmin=\numexpr\year+1\relax
+  \global\cv@cmax=\z@
+  \cv@countingtrue
+  \setbox\z@\vbox{% count; nothing is printed here, so nothing is tagged
+    \ifdefined\SuspendTagging\SuspendTagging{committee counts}\fi
+    \printbibliography[type=committee,env=cvcollect,heading=none]}%
+  \cv@countingfalse
+  \ifnum\cv@cmax>\z@
+    \begin{cvlist}%
+    \cv@cy=\cv@cmax
+    \loop\unless\ifnum\cv@cy<\cv@cmin
+      \def\cv@line{}%
+      \forcsvlist\cv@countgroup{#1}%
+      \ifx\cv@line\@empty\else
+        \edef\cv@tmp{\noexpand\cvitem\noexpand\hlteaching[\the\cv@cy]%
+          {\the\cv@cy\space---\space\expandonce\cv@line}}%
+        \cv@tmp
+      \fi
+      \advance\cv@cy\m@ne
+    \repeat
+    \end{cvlist}%
+  \fi
+  \endgroup}
+
+% named committees in one group (\cv@cgroup), and with [period] only those
+% whose years overlap the review period
+\def\cv@cgroup{}
+\newif\ifcv@cperiod
+\defbibcheck{cvcommittee}{%
+  \ifnameundef{author}{\skipentry}{%
+    \edef\cv@g{\cv@groupof{\thefield{degree}}}%
+    \ifx\cv@g\cv@cgroup
+      \ifcv@cperiod
+        \iffieldint{year}{%
+          \cv@yearsof
+          \edef\cv@tmp{\the\cv@from-\the\cv@until}%
+          \expandafter\apr@ifyears\expandafter{\cv@tmp}{}{\skipentry}}{}%
+      \fi
+    \else
+      \skipentry
+    \fi}}
+
+\defbibenvironment{cvcommittees}
+  {\begin{itemize}[label=\textbullet, labelsep=0.5em, itemsep=0pt]\raggedright
+   \renewcommand*{\finentrypunct}{}}
+  {\end{itemize}}
+  {\item}
+
+\NewDocumentCommand\printcommittees{om}{%
+  \begingroup
+  \edef\cv@cgroup{#2}%
+  \IfValueTF{#1}{\cv@cperiodtrue}{\cv@cperiodfalse}%
+  \begin{refcontext}[sorting=cvservice]%
+    \printbibliography[type=committee,check=cvcommittee,env=cvcommittees,heading=none]%
+  \end{refcontext}%
+  \endgroup}
 
 %% ---------------------------------------------------------------- courses
 % Like the grants: the driver collects one table row per course into

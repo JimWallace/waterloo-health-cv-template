@@ -131,8 +131,8 @@ The rest of this file is the reference for the package.
 | `biblatex-formatting.tex` | biblatex tweaks: badge icons in the margin, the `inproceedings` driver. |
 | `ACM-Reference-Format.{bbx,cbx,dbx,bst}` | ACM bibliography style (vendored). |
 | `aprcv.sty` | APR highlighting. Its header documents every command. |
-| `cv-records.tex` | Grants, supervision, awards, service and courses as biblatex records: the tables, the lists, sorting and highlighting. |
-| `uwhealthcv.dbx` | The biblatex data model for `@grant`, `@supervision`, `@award`, `@service` and `@course` (fields documented in its header). |
+| `cv-records.tex` | Grants, supervision, committees, awards, service and courses as biblatex records: the tables, the lists, sorting and highlighting. |
+| `uwhealthcv.dbx` | The biblatex data model for `@grant`, `@supervision`, `@committee`, `@award`, `@service` and `@course` (fields documented in its header). |
 | `cv-layout.tex` | Page-break rules: `\keepwithnext`, `\sectionbreak`, widow and club control. |
 | `images/` | Badge images a bib entry can show in the margin with `icon = {images/<file>}`. `icon = {award}` draws the award rosette instead (`biblatex-formatting.tex`); in the APR version it is filled with the award colour when the entry is in the review period. |
 | `example/` | A fictional CV that uses every feature. Build it to test a template change. |
@@ -206,10 +206,12 @@ every CV that uses the template.
   `\sectionbreak`, `\usvardate`, `\monthyear`, `\extlink`.
 - Section markup: `\cvsection`, `\cvsubheading`, `cvlist` and `cvbulletlist` with `\cvitem`, `cvgroup`, `cvparts`
   with `\cvpart`, `\printcategory`. Documented in the `uwhealthcv.sty` header.
-- Records: `\cvowner`, `\printgrants`, `\printsupervision{degree}`, `\printawards`,
+- Records: `\cvowner`, `\printgrants`, `\printsupervision{degree}`,
+  `\printcommitteecounts{groups}`, `\printcommittees[period]{group}`,
+  `\cvcommitteegroup{group}{degrees}`, `\printawards`,
   `\printservice{level}`, `\printcourses[scp]` (with `\cvcoursescplabel` and
   `\cvcourseaveragelabel` for its score headings), the entry types `@grant`, `@supervision`,
-  `@award`, `@service` and `@course` with the fields in `uwhealthcv.dbx`, and `\me` inside a
+  `@committee`, `@award`, `@service` and `@course` with the fields in `uwhealthcv.dbx`, and `\me` inside a
   grant's `investigators`. Documented in `cv-records.tex`.
 - For other record types: `\aprtypecategory{type}{colour}`, `\aprsetentrycolour`, `\aprentrymark`
   and `\aprmarkleftof{label}`

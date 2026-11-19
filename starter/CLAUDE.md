@@ -23,7 +23,8 @@ One source, two PDFs:
 - `grants.bib` holds grants (`@grant`), `supervision.bib` my students (`@supervision`) and
   `awards.bib` the ACADEMIC AWARDS AND DISTINCTIONS list (`@award`) and
   `service.bib` the SERVICE lists and `activities.bib` the SCHOLARLY AND PROFESSIONAL
-  ACTIVITIES lists (both `@service`) and `courses.bib` the COURSES TAUGHT table (`@course`).
+  ACTIVITIES lists (both `@service`) and `courses.bib` the COURSES TAUGHT table (`@course`)
+  and `committees.bib` the thesis committees I sit on (`@committee`).
   The fields are described in `template/uwhealthcv.dbx`. They print sorted, and the APR
   colours come from their dates, so there are no years to keep in step by hand.
 - `apr-formatting.tex` holds my settings for the APR version (highlight strength and style).
@@ -131,8 +132,16 @@ joined with ". ")
   tenure. Order in the file doesn't matter.
 - Supervision → a `@supervision` entry in `supervision.bib`: `author = {Family, Given}`,
   `degree` (one of the `\printsupervision{…}` lists in `main.tex`), and `status = {In progress}`
-  until they finish, then `date`, `title` and, when I know it, `position`. Committee
-  membership and external examining stay as lines in `main.tex`.
+  until they finish, then `date`, `title` and, when I know it, `position`. External
+  examining stays as lines in `main.tex`.
+- Committees (students I don't supervise) → a `@committee` entry in `committees.bib`:
+  `author = {Family, Given}`, `degree`, `program`, `date` = the years served (`2024/2026`, or
+  `2025/` while ongoing), `note` (`defended 2026`, `in progress`), `title` when I know it, and
+  `role` for a chair (`chair, oral comprehensive examination`). The year lines
+  (`\printcommitteecounts`) count each committee in every year of its date, so never edit a
+  count by hand. A year with no names has count-only records (`degree`, `date = {2019}`,
+  `count`), which give that year's number for that degree; add names to a year only once
+  all of its committees are known, then delete its count records in the same commit.
 - Courses → a `@course` entry in `courses.bib`, one per offering: `course` (EXMP 401/601),
   `title`, `date` = the month the term starts (`2026-01` Winter, `-05` Spring, `-09` Fall),
   optional `level`, `enrolment` and `responses` (digits), `note`, and Student Course Perceptions scores as
@@ -147,12 +156,13 @@ Review Guidelines and my school's addendum to them, if it has one. Neither is in
   earlier years are context. Files are due the last working day of December.
 - Thesis and comprehensive-exam committees for students I don't supervise are teaching
   ("Teaching and mentorship includes … committees of students (thesis committees,
-  comprehensive exams)"), whatever the student's department: `\hlteaching`, counted in the
-  "As Committee Member" year line and named in "Committees in the review period".
+  comprehensive exams)"), whatever the student's department: a `@committee` record, which is
+  teaching automatically, counted in the year lines and named in "Committees in the review
+  period".
 - Chairing a student's exam (oral comprehensive or defence) is a committee role *and* service
-  (the guidelines list the university pool of defence chairs as service). Count it in the
-  year line like any committee, and name it under the degree with
-  `\hlboth[YYYY]{teaching}{service}{Name (PhD, Program; chair, oral comprehensive examination, YYYY)}`.
+  (the guidelines list the university pool of defence chairs as service): a `@committee`
+  record with `role = {chair, oral comprehensive examination}`, counted like any committee,
+  and its key in `apralsoservice` for the second colour.
 - External examining is teaching and service (`\hlboth`), under External Examiner. (The
   Faculty lists "project and oral and thesis examinations/supervision" as teaching.)
 - Supervision (graduate, undergraduate thesis, practicum, postdoc) is teaching, but papers and

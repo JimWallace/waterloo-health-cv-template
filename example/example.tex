@@ -33,6 +33,8 @@
 \addtocategory{apralsoteaching}{example2026journal, example2026talk, example2026posteraward}
 \addtocategory{aprteaching}{example2026software}
 \addtocategory{apralsoresearch}{example2026software, exampleconf2026chair}
+% chairing an examination: teaching and service
+\addtocategory{apralsoservice}{candidate2026chair}
 
 \begin{document}
 
@@ -74,19 +76,22 @@ PhD                & University of Waterloo   & 2010 -- 2015 \\
 \cvsubheading{Conference Organizing Committee:}
     \printservice{organizing}
 
-% cvbulletlist: the same layout with bullets, for entries that run to two
-% lines; cvgroup puts a label (here the degree) in the left column, list below
+% @committee records in example.bib: \printcommitteecounts counts them by
+% year; \printcommittees lists the named ones, in a cvgroup (a label in the
+% left column, the bulleted list below it). MASc counts with MSc.
+\cvcommitteegroup{MSc}{MSc, MASc}
 \cvsubheading{Thesis Committees:}
+    \printcommitteecounts{MSc, PhD}
+
+\ifAPR % APR version only: the named committees
+\cvsubheading{Committees in the review period:}
 \begin{cvgroup}{PhD}
-\begin{cvbulletlist}
-    \cvitem \hlteaching[2026]{A. Student (PhD, Example Sciences; defended 2026). \textit{A Longer Thesis Title That Runs On to a Second Line to Show Why the Bullets Help the Reader}}
-\end{cvbulletlist}
+    \printcommittees[period]{PhD}
 \end{cvgroup}
 \begin{cvgroup}{MSc}
-\begin{cvbulletlist}
-    \cvitem A. N. Other (MSc, Example Studies; 2019). \textit{A Shorter Thesis Title}
-\end{cvbulletlist}
+    \printcommittees[period]{MSc}
 \end{cvgroup}
+\fi
 
 \ifAPR % APR version only ------------------------------------------
 \sectionbreak
