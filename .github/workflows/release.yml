@@ -1,0 +1,57 @@
+# Makes a release: tags a commit vX.Y.Z and publishes a GitHub release whose notes
+# are that version's CHANGELOG.md section. Run it from Actions → Release → Run
+# workflow (Claude sessions start it with the GitHub API, since they can't push
+# tags). CVs pick a release up through their "Template update" workflow.
+#
+# Before running: CHANGELOG.md has a "## vX.Y.Z — date" section and both
+# \ProvidesPackage lines say vX.Y.Z, on a commit whose CI passed.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, e.g. v0.2.0"
+        required: true
+      ref:
+        description: "Commit or branch to tag (default: main)"
+        required: false
+        default: main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+      - name: Check the version
+        run: |
+          case "$VERSION" in v[0-9]*.[0-9]*.[0-9]*) ;; *) echo "::error::version must look like v1.2.3"; exit 1;; esac
+          if git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null; then echo "::error::$VERSION already exists"; exit 1; fi
+          for f in uwhealthcv.sty aprcv.sty; do
+            grep -q "\\\\ProvidesPackage{[a-z]*}\[[0-9/]* $VERSION " "$f" \
+              || { echo "::error file=$f::\\ProvidesPackage does not say $VERSION"; exit 1; }
+          done
+          awk -v v="$VERSION" '$0 ~ "^## "v" " {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
+          [ -s notes.md ] || { echo "::error file=CHANGELOG.md::no section for $VERSION"; exit 1; }
+      - name: CI passed on this commit
+        run: |
+          sha=$(git rev-parse HEAD)
+          ok=$(gh api "repos/$GH_REPO/actions/workflows/ci.yml/runs?head_sha=$sha&status=success" --jq '.total_count')
+          [ "$ok" -gt 0 ] || { echo "::error::No successful CI run for $sha; wait for CI, or fix it first."; exit 1; }
+      - name: Tag and publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$VERSION" -m "$VERSION"
+          git push origin "$VERSION"
+          gh release create "$VERSION" --title "$VERSION" --notes-file notes.md --verify-tag
