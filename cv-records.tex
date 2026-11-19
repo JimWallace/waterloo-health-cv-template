@@ -434,7 +434,8 @@
   \global\cv@cmin=\numexpr\year+1\relax
   \global\cv@cmax=\z@
   \cv@countingtrue
-  \setbox\z@\vbox{% count; nothing is printed here
+  \setbox\z@\vbox{% count; nothing is printed here, so nothing is tagged
+    \ifdefined\SuspendTagging\SuspendTagging{committee counts}\fi
     \printbibliography[type=committee,env=cvcollect,heading=none]}%
   \cv@countingfalse
   \ifnum\cv@cmax>\z@
