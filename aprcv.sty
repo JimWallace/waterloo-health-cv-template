@@ -47,7 +47,9 @@
 %% to the category aprteaching, aprservice or apraward; to stop one entry
 %% from being highlighted, add it to aprnone. To give an entry a second
 %% colour, add it to apralsoteaching, apralsoresearch, apralsoservice or
-%% apralsoaward. To highlight an entry whose year falls after the review
+%% apralsoaward. An entry in two of these lists has three colours: the
+%% dots style fills all three, while the other styles show the primary
+%% colour and the last of the two in that order (award last). To highlight an entry whose year falls after the review
 %% period (e.g. accepted during the period, published the next year), add
 %% it to aprinclude.
 %%
@@ -199,6 +201,9 @@
 % badge outside the review period). \apr@markbadge: the entry's badge
 % ("award" or empty).
 \def\apr@markbadge{}
+% \apr@markthird: the entry's third colour, or empty; only the dots style
+% shows it (a dot for each of three categories)
+\def\apr@markthird{}
 % \apr@markatlabel: non-empty for a numbered bibliography entry, whose
 % marker sits just left of its label ([J1]); other markers sit left of the
 % text block, clear of side headings such as a degree column
@@ -233,7 +238,7 @@
         \ifx\apr@markatlabel\@empty\else
         \the\dimexpr 1in+\hoffset+\oddsidemargin
           +\@totalleftmargin-\labelsep-\labelwidth\relax\fi
-        \else\apr@markat\fi}{\apr@markonly}{\apr@markcompact}}%
+        \else\apr@markat\fi}{\apr@markonly}{\apr@markcompact}{\apr@markthird}}%
       {\the\dimexpr 1in+\hoffset+\oddsidemargin+\@totalleftmargin\relax}%
       {\the\linewidth}{\the\ht\strutbox}{\the\dp\strutbox}}}%
   \apr@tmp}
@@ -254,10 +259,11 @@
       {\noexpand\the\pdflastxpos}{\noexpand\the\pdflastypos}}}%
   \apr@tmp}
 
-% \apr@rowmark{primary}{secondary}: the dots style's marker for a table row,
-% at the start of its first cell (\aprentrymark)
-\newcommand\apr@rowmark[2]{%
-  \begingroup\def\apr@markonly{x}\def\apr@markcompact{x}\apr@mark@start{#1}{#2}\apr@mark@end\endgroup}
+% \apr@rowmark{primary}{secondary}{third}: the dots style's marker for a
+% table row, at the start of its first cell (\aprentrymark)
+\newcommand\apr@rowmark[3]{%
+  \begingroup\def\apr@markonly{x}\def\apr@markcompact{x}\def\apr@markthird{#3}%
+    \apr@mark@start{#1}{#2}\apr@mark@end\endgroup}
 
 %% painting (inside a picture with 1pt units; y measured up from \apr@oy)
 \newdimen\apr@pageht \newdimen\apr@oy
@@ -373,16 +379,20 @@
 % dots style: one marker left of the entry's first line, right-aligned
 % against the text block: an award slot, then three dots (research,
 % teaching, service) nearest the entry, each filled in full colour when the
-% entry's primary or secondary colour is that category. The award slot holds
+% entry's primary, second or third colour is that category. The award slot holds
 % the rosette -- filled when the entry is an award or
 % is highlighted and has an award badge, white for a badge outside the
 % review period, empty otherwise. The dots appear on highlighted entries
 % only.
+\newif\ifapr@catin
 \def\apr@ifcat#1{%
   \edef\apr@tmpa{APR#1}%
-  \ifx\apr@pc\apr@tmpa \expandafter\@firstoftwo
-  \else\ifx\apr@sc\apr@tmpa \expandafter\expandafter\expandafter\@firstoftwo
-  \else \expandafter\expandafter\expandafter\@secondoftwo \fi\fi}
+  \apr@catinfalse
+  \ifx\apr@pc\apr@tmpa \apr@catintrue \fi
+  \ifx\apr@sc\apr@tmpa \apr@catintrue \fi
+  \ifx\apr@tc\apr@tmpa \apr@catintrue \fi
+  \ifapr@catin \expandafter\@firstoftwo \else \expandafter\@secondoftwo \fi}
+\def\apr@tc{}
 \def\apr@dot#1#2{% #1: category, #2: index from the right (0, 1, 2)
   \apr@ra=\dimexpr\apr@dotx-\apr@dotm-\apr@dotr-(2\apr@dotr+\apr@dotg)*#2\relax
   \apr@rb=\dimexpr\apr@ys+(\apr@H-\apr@D)/2-\apr@oy\relax
@@ -433,9 +443,10 @@
 
 % #4: the marker's right edge (left of a list item's label, or the text
 % block, or \apr@markat); #5: marker only (a table row); #6: compact
-% marker; records from an earlier run may lack #3 to #6
-\def\apr@setcols#1#2#3#4#5#6#7\@nil{%
-  \def\apr@pc{#1}\def\apr@sc{#2}\def\apr@badge{#3}\def\apr@markonly{#5}%
+% marker; #7: third colour (dots style only); records from an earlier run
+% may lack #3 to #7
+\def\apr@setcols#1#2#3#4#5#6#7#8\@nil{%
+  \def\apr@pc{#1}\def\apr@sc{#2}\def\apr@tc{#7}\def\apr@badge{#3}\def\apr@markonly{#5}%
   \def\apr@markcompact{#6}%
   \apr@dotx=\dimexpr1in+\hoffset+\oddsidemargin\relax
   \if\relax\detokenize{#4}\relax\else\apr@dotx=#4\relax\fi}
@@ -451,7 +462,7 @@
     \apr@L=#5\relax \apr@R=\dimexpr#5+#6\relax
     \apr@slot=\apr@badgew \apr@onpagetrue
     \apr@H=#7\relax \apr@D=#8\relax
-    \apr@setcols#4{}{}{}{}{}{}\@nil
+    \apr@setcols#4{}{}{}{}{}{}{}\@nil
     \apr@hasbfalse
     \ifcsname apr@B@#9\endcsname
       \expandafter\expandafter\expandafter\apr@setB
@@ -521,7 +532,7 @@
     \fi
     \begingroup
       \sbox\apr@box{#3}%
-      \edef\apr@pc{\apr@col{#1}}\edef\apr@sc{\apr@col{#2}}\def\apr@badge{}%
+      \edef\apr@pc{\apr@col{#1}}\edef\apr@sc{\apr@col{#2}}\def\apr@tc{}\def\apr@badge{}%
       \def\apr@markonly{}\def\apr@markcompact{}%
       \apr@oy=\z@ \apr@xs=\z@ \apr@xe=\wd\apr@box \apr@ys=\z@ \apr@ye=\z@
       \apr@L=\z@ \apr@R=\wd\apr@box \apr@dotx=-\apr@bleed \apr@onpagefalse
@@ -587,12 +598,13 @@
     \AtBeginBibliography{\interlinepenalty=\@M\relax}%
     \def\apr@bib@on{}%
     % \apr@bib@decide sets \apr@c to the entry's colour, or empty when it is
-    % not highlighted, and \apr@c@two to its second colour (or empty). An
+    % not highlighted, \apr@c@two to its second colour and \apr@c@three to
+    % its third (each empty when there is none). An
     % entry is in the review period when its year, or its range year to
     % endyear (a grant's tenure), overlaps it; an undated entry with a
     % status field (a student in progress) is ongoing, so it is in.
     \def\apr@bib@decide{%
-      \def\apr@c{}\def\apr@c@two{}%
+      \def\apr@c{}\def\apr@c@two{}\def\apr@c@three{}%
       \ifcategory{aprnone}{}{%
         \def\apr@dated{}\def\apr@y{}%
         \iffieldint{year}{%
@@ -614,10 +626,15 @@
             \ifcsdef{apr@type@\thefield{entrytype}}%
               {\letcs\apr@c{apr@type@\thefield{entrytype}}}%
               {\def\apr@c{APRresearch}}}}}%
-      \ifcategory{apralsoteaching}{\def\apr@c@two{APRteaching}}{}%
-      \ifcategory{apralsoresearch}{\def\apr@c@two{APRresearch}}{}%
-      \ifcategory{apralsoservice}{\def\apr@c@two{APRservice}}{}%
-      \ifcategory{apralsoaward}{\def\apr@c@two{APRaward}}{}}%
+      \ifcategory{apralsoteaching}{\apr@also{APRteaching}}{}%
+      \ifcategory{apralsoresearch}{\apr@also{APRresearch}}{}%
+      \ifcategory{apralsoservice}{\apr@also{APRservice}}{}%
+      \ifcategory{apralsoaward}{\apr@also{APRaward}}{}}%
+    % \apr@also{colour}: the latest apralso... list is the second colour (as
+    % before there were three) and the one before it moves to third
+    \def\apr@also#1{%
+      \let\apr@c@three\apr@c@two
+      \def\apr@c@two{#1}}%
     \def\apr@bib@start{%
       \global\let\apr@bib@on\@empty
       \apr@bib@decide
@@ -634,16 +651,17 @@
       \else\@tempswatrue\fi
       \if@tempswa
         \gdef\apr@bib@on{x}%
+        \let\apr@markthird\apr@c@three
         \edef\apr@tmp{\noexpand\apr@mark@start{\apr@c}{\apr@c@two}}%
         \apr@tmp
       \fi
-      \def\apr@markbadge{}\def\apr@markatlabel{}}%
+      \def\apr@markbadge{}\def\apr@markatlabel{}\def\apr@markthird{}}%
     \renewcommand\aprsetentrycolour{%
       \apr@bib@decide
       \let\aprentrycolour\apr@c
       \def\aprentrymark{}%
       \ifx\apr@style\apr@style@dots\ifx\apr@c\@empty\else
-        \edef\aprentrymark{\noexpand\apr@rowmark{\apr@c}{\apr@c@two}}%
+        \edef\aprentrymark{\noexpand\apr@rowmark{\apr@c}{\apr@c@two}{\apr@c@three}}%
       \fi\fi}%
     \def\apr@bib@end{%
       \ifx\apr@bib@on\@empty\else

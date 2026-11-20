@@ -37,7 +37,9 @@ two-year review period. The APR version shows the reviewer where each item belon
   (`apr-formatting.tex`). The default is dots: each highlighted entry gets
   three dots in the margin (research, teaching, service), filled for the
   categories it counts in, so two-colour work reads at a glance and survives
-  black-and-white printing as filled versus empty.
+  black-and-white printing as filled versus empty. An entry in two `apralso…`
+  lists counts in three categories; the dots style fills all three (the other
+  styles show two).
 
 ![Publications in the APR version in the dots style: a review-period journal article highlighted green with the research and teaching dots filled for its trainee co-author, an empty award rosette beside an older paper, and a trainee's award-winning poster with a filled pink rosette before its dots.](docs/images/apr-publications.png)
 
