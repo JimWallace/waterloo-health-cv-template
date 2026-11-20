@@ -5,6 +5,14 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+## v0.4.3 — 2026-11-20
+
+A fix: nothing for a CV to change.
+
+- `CITATION.cff` gives the current version and release date (it still said
+  0.1.0), so a citation of the template, or an archived copy of a release,
+  names the right version.
+
 ## v0.4.2 — 2026-11-19
 
 A fix: nothing for a CV to change.
