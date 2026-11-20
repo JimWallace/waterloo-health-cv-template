@@ -18,7 +18,8 @@ release of the root in their `template/` directory.
   must do in `CHANGELOG.md`, and update `starter/main.tex` in the same PR.
 - **Releases.** Every change adds a line under "Unreleased" in `CHANGELOG.md`.
   A release moves those lines under the new version, sets the same version and
-  date in `\ProvidesPackage` (`uwhealthcv.sty`, `aprcv.sty`), and, once CI passes on
+  date in `\ProvidesPackage` (`uwhealthcv.sty`, `aprcv.sty`) and in `CITATION.cff`
+  (`version`, without the "v", and `date-released`), and, once CI passes on
   that commit, runs the Release workflow (`.github/workflows/release.yml`), which tags
   `vX.Y.Z` and publishes the release. Claude sessions can't push tags; they start it
   with the GitHub API (workflow dispatch).
