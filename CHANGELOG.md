@@ -5,6 +5,10 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+## v0.5.0 — 2026-11-20
+
+An addition: nothing for a CV to change.
+
 - An entry can have three colours: put it in two `apralso…` categories (for
   example `aprservice` plus `apralsoteaching` and `apralsoresearch`). The dots
   style fills all three dots; the other styles show the primary colour and
