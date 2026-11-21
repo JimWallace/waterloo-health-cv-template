@@ -5,6 +5,19 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+A fix: nothing for a CV to change.
+
+- Dots style: every entry's marker now sits in one column, right-aligned
+  against the left edge of the text block. Before, numbered publications put
+  theirs left of the [J1] label, supervision lists left of each degree label
+  (so PhD, MSc and MMath each had their own column), plain lists 0.45in from
+  the paper edge, and table rows at the text block, so a page could show four
+  or five columns. The rule that keeps the marker off the paper edge now keeps
+  only the dots 0.25in clear, so a rosette doesn't push its dots out of the
+  column; at the Faculty's 0.75in margins the rosette sits about 0.1in from
+  the edge. `\aprmarkleftof` does nothing now (kept so a CV that calls it
+  still compiles). The README screenshots show the new column.
+
 ## v0.5.0 — 2026-11-20
 
 An addition: nothing for a CV to change.
