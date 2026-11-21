@@ -5,6 +5,16 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+## v0.8.1 — 2026-11-21
+
+A fix: nothing for a CV to change.
+
+- The plain CV (and the APR styles other than dots) draws an entry's badge
+  (the award rosette or an `icon` image) just left of its label, 6pt from it
+  and centred on the first line, as the dots style places a rosette with no
+  dots, instead of out in the left margin. An entry outside the content
+  column keeps it in the margin.
+
 ## v0.8.0 — 2026-11-21
 
 An addition: nothing for a CV to change.

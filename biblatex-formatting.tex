@@ -9,7 +9,7 @@
     }
 }
 
-% The icon field: a badge in the margin. icon = {award} (or the older
+% The icon field: a badge beside the entry's label. icon = {award} (or the older
 % images/hm.png) draws the award rosette below; any other value is an image
 % file. In the APR version, when the entry is highlighted (in the review
 % period), the rosette is filled with the award colour, so an award on a
@@ -36,11 +36,29 @@
 % cvawardinline: set by the APR dots style, which draws the award badge as
 % part of its marker; other badges stay in the margin
 \newif\ifcvawardinline
+% Otherwise the badge sits just left of the content column (\cvcontentindent,
+% uwhealthcv.sty), where an entry's label ([J1]) starts, 6pt from it and
+% centred on the first line, as the dots style places a rosette with no
+% dots. An entry outside the content column keeps it in the margin.
+\newlength\cv@badgeshift
 \DeclareFieldFormat{usera}{%
     \ifboolexpr{bool {cvawardinline} and
         (test {\ifstrequal{#1}{award}} or test {\ifstrequal{#1}{images/hm.png}})}
       {}%
-      {\marginpar{\hspace{1.75em}\raisebox{-0.5\height}{\cvbadge{#1}}}}%
+      {\setlength\cv@badgeshift{\dimexpr\@totalleftmargin
+         \ifdefined\cvcontentindent-\cvcontentindent\fi+6pt\relax}%
+       \ifdefined\cvcontentindent\ifdim\@totalleftmargin<\cvcontentindent
+         \setlength\cv@badgeshift{-1pt}\fi\fi
+       \ifdim\cv@badgeshift<\z@
+         \marginpar{\hspace{1.75em}\raisebox{-0.5\height}{\cvbadge{#1}}}%
+       \else
+         % the rosette's medallion (69% up its height) on the line's middle,
+         % ribbons hanging below; an image centred
+         \ifboolexpr{test {\ifstrequal{#1}{award}} or test {\ifstrequal{#1}{images/hm.png}}}
+           {\def\cv@badgeat{0.69}}{\def\cv@badgeat{0.5}}%
+         \llap{\smash{\raisebox{\dimexpr0.2\baselineskip-\cv@badgeat\height\relax}{\cvbadge{#1}}}%
+               \hspace{\cv@badgeshift}}%
+       \fi}%
 }
 
 % The badge sits in the margin and takes no room in the line, so no space
