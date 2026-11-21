@@ -5,6 +5,31 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+An addition: nothing for a CV to change, though a CV can drop the `\\` and
+blank lines it used for spacing (see below).
+
+- Indents follow the Faculty of Health's vitae format (the `.doc` linked from
+  its CV page): a part's letter (a), b) ...) at 0.25in, its title and every
+  list's content at 0.5in. Before, lists sat at about 0.41in and part titles
+  at 0.39in. A list inside a part starts at the part's title instead of being
+  indented again.
+- Supervision degree labels (PhD, MSc, MMath ...) are left-aligned in the
+  content column, in a label column as wide as "MMath"
+  (`\cvdegreelabelwidth`), so every degree's students start at the same place.
+  `cvgroup` uses the same column.
+- Vertical spacing follows the format too: one blank line after a section
+  heading and between parts, labelled lists and degree groups; a part's title
+  or a `\cvsubheading` label is followed directly by its content. Lists no
+  longer add their own top spacing, which had made the gaps vary from section
+  to section. A `\\` straight after `\cvpart{...}` is dropped, so
+  `\cvpart{Invited} \\` no longer leaves an empty line.
+- `\cvpart*{Title}` gives a part a plain title, as the format sets the parts of
+  PRESENTATION TO SCHOLARLY GROUPS and SERVICE.
+- Example and starter: PRESENTATION TO SCHOLARLY GROUPS has its colon and plain
+  part titles; SERVICE is in lettered parts; the committee counts are under
+  GRADUATE STUDENT SUPERVISION as b) As Committee Member, as in the format; the
+  DEGREES RECEIVED table starts at 0.5in, directly under its heading.
+
 A fix: nothing for a CV to change.
 
 - Dots style: every entry's marker now sits in one column, right-aligned
