@@ -218,7 +218,7 @@ every CV that uses the template.
   line after a section heading and between parts, none between a part's title
   and its content. The lengths `\cvletterindent`, `\cvcontentindent` and
   `\cvdegreelabelwidth` set the grid.
-- Records: `\cvowner`, `\printgrants`, `\printsupervision{degree}`,
+- Records: `\cvowner` (the name, set once) and `\cvname` (prints it), `\printgrants`, `\printsupervision{degree}`,
   `\printcommitteecounts{groups}`, `\printcommittees[period]{group}`,
   `\cvcommitteegroup{group}{degrees}`, `\printawards`,
   `\printservice{level}`, `\printcourses[scp]` (with `\cvcoursescplabel` and
