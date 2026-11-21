@@ -159,12 +159,12 @@
 \newdimen\apr@barw   \apr@barw=3pt
 \newdimen\apr@dotr  \apr@dotr=3.85pt % dot radius: the rosette's medallion
 \newdimen\apr@dotg  \apr@dotg=1.8pt  % gap between dots
-\newdimen\apr@dotm  \apr@dotm=6pt    % gap between the marker and the label or text
+\newdimen\apr@dotm  \apr@dotm=6pt    % gap between the marker and the text block
 \newdimen\apr@badgew \apr@badgew=11pt % width of the marker's award slot
 \newdimen\apr@slot  % award slot width actually reserved (0 in a sample
                      % without a rosette)
-\newdimen\apr@dotx  % right edge of the marker: the left of a numbered
-                     % entry's label (such as [J1]), the text block, or a sample
+\newdimen\apr@dotx  % right edge of the marker: the left of the text block
+                     % (one column for every entry), or a sample
 
 % two-colour style: halves (left half primary, right half secondary), split
 % (primary on top, secondary below), blend (primary fading into secondary
@@ -204,27 +204,12 @@
 % \apr@markthird: the entry's third colour, or empty; only the dots style
 % shows it (a dot for each of three categories)
 \def\apr@markthird{}
-% \apr@markatlabel: non-empty for a numbered bibliography entry, whose
-% marker sits just left of its label ([J1]); other markers sit left of the
-% text block, clear of side headings such as a degree column
-\def\apr@markatlabel{}
 % \apr@markonly: non-empty for a table row, whose fill is its \rowcolor, so
 % only the dots style's marker is drawn
 \def\apr@markonly{}
-% \apr@markat: the marker's right edge when set (\aprmarkleftof), for
-% entries that sit beside a side label (a degree); such a marker and a
-% table row's are compact: no award slot unless the entry has a badge, and
-% they may come within \apr@compactedge of the paper edge
-\def\apr@markat{}
-\def\apr@markcompact{}
-% \aprmarkleftof{label}: inside a list, after \item[label], put the
-% markers of the entries that follow just left of that label
-\newcommand\aprmarkleftof[1]{%
-  \settowidth\@tempdima{#1}%
-  \ifdim\@tempdima<\labelwidth \@tempdima=\labelwidth \fi
-  \edef\apr@markat{\the\dimexpr 1in+\hoffset+\oddsidemargin
-    +\@totalleftmargin-\labelsep-\@tempdima\relax}%
-  \def\apr@markcompact{x}}
+% \aprmarkleftof{label}: kept so CVs that call it still compile; it does
+% nothing, since every marker now sits in one column left of the text block
+\newcommand\aprmarkleftof[1]{}
 \newcommand\apr@mark@start[2]{%
   \ifvmode\leavevmode\fi
   \interlinepenalty\@M % keep a highlighted entry on one page
@@ -234,11 +219,7 @@
   \edef\apr@tmp{\write\@auxout{%
     \string\aprM{\apr@cur}{\noexpand\the\ReadonlyShipoutCounter}%
       {\noexpand\the\pdflastxpos}{\noexpand\the\pdflastypos}%
-      {{#1}{#2}{\apr@markbadge}{\ifx\apr@markat\@empty
-        \ifx\apr@markatlabel\@empty\else
-        \the\dimexpr 1in+\hoffset+\oddsidemargin
-          +\@totalleftmargin-\labelsep-\labelwidth\relax\fi
-        \else\apr@markat\fi}{\apr@markonly}{\apr@markcompact}{\apr@markthird}}%
+      {{#1}{#2}{\apr@markbadge}{}{\apr@markonly}{}{\apr@markthird}}%
       {\the\dimexpr 1in+\hoffset+\oddsidemargin+\@totalleftmargin\relax}%
       {\the\linewidth}{\the\ht\strutbox}{\the\dp\strutbox}}}%
   \apr@tmp}
@@ -262,7 +243,7 @@
 % \apr@rowmark{primary}{secondary}{third}: the dots style's marker for a
 % table row, at the start of its first cell (\aprentrymark)
 \newcommand\apr@rowmark[3]{%
-  \begingroup\def\apr@markonly{x}\def\apr@markcompact{x}\def\apr@markthird{#3}%
+  \begingroup\def\apr@markonly{x}\def\apr@markthird{#3}%
     \apr@mark@start{#1}{#2}\apr@mark@end\endgroup}
 
 %% painting (inside a picture with 1pt units; y measured up from \apr@oy)
@@ -410,21 +391,15 @@
     \ifx\apr@badge\@empty \def\apr@tmpc{}%
     \else\ifx\apr@pc\@empty \def\apr@tmpc{white}%
     \else \def\apr@tmpc{APRaward}\fi\fi}}
-\newdimen\apr@edge  \apr@edge=.45in % the marker stays this far from the paper edge
-\newdimen\apr@compactedge \apr@compactedge=.25in % a compact marker (a table
-                     % row, or beside a degree label) stays this far
+\newdimen\apr@edge  \apr@edge=.25in % the dots stay this far from the paper edge
 \newif\ifapr@onpage % painting the page (true) or an inline sample (false)
 \def\apr@marker{%
-  % on the page (not in a sample), keep the whole marker clear of the
-  % paper edge, where printers may not print
+  % on the page (not in a sample), keep the dots clear of the paper edge,
+  % where printers may not print. The rule ignores the award slot, so every
+  % entry's dots share one column, with or without a rosette; at the Faculty
+  % of Health's 0.75in margins it never applies.
   \ifapr@onpage
-    \ifx\apr@markcompact\@empty
-      \apr@cut=\dimexpr\apr@edge+\apr@slot+4\apr@dotg+6\apr@dotr+\apr@dotm\relax
-    \else
-      \ifx\apr@badge\@empty \apr@slot=\z@ \fi
-      \apr@cut=\dimexpr\apr@compactedge+\apr@slot+2\apr@dotg
-        \ifdim\apr@slot>\z@ +2\apr@dotg\fi+6\apr@dotr+\apr@dotm\relax
-    \fi
+    \apr@cut=\dimexpr\apr@edge+2\apr@dotg+6\apr@dotr+\apr@dotm\relax
     \ifdim\apr@dotx<\apr@cut \apr@dotx=\apr@cut \fi
   \fi
   \apr@rosettefill
@@ -441,15 +416,14 @@
     \apr@dot{research}{2}\apr@dot{teaching}{1}\apr@dot{service}{0}%
   \fi}
 
-% #4: the marker's right edge (left of a list item's label, or the text
-% block, or \apr@markat); #5: marker only (a table row); #6: compact
-% marker; #7: third colour (dots style only); records from an earlier run
-% may lack #3 to #7
+% #5: marker only (a table row); #7: third colour (dots style only). The
+% marker's right edge is always the left of the text block, so every entry's
+% marker is in one column; #4 and #6 (the marker's own edge and a compact
+% marker, before v0.5.1) are ignored. Records from an earlier run may lack
+% #3 to #7
 \def\apr@setcols#1#2#3#4#5#6#7#8\@nil{%
   \def\apr@pc{#1}\def\apr@sc{#2}\def\apr@tc{#7}\def\apr@badge{#3}\def\apr@markonly{#5}%
-  \def\apr@markcompact{#6}%
-  \apr@dotx=\dimexpr1in+\hoffset+\oddsidemargin\relax
-  \if\relax\detokenize{#4}\relax\else\apr@dotx=#4\relax\fi}
+  \apr@dotx=\dimexpr1in+\hoffset+\oddsidemargin\relax}
 
 \def\apr@draw@one#1{%
   \ifcsname apr@S@#1\endcsname\ifcsname apr@E@#1\endcsname
@@ -533,7 +507,7 @@
     \begingroup
       \sbox\apr@box{#3}%
       \edef\apr@pc{\apr@col{#1}}\edef\apr@sc{\apr@col{#2}}\def\apr@tc{}\def\apr@badge{}%
-      \def\apr@markonly{}\def\apr@markcompact{}%
+      \def\apr@markonly{}%
       \apr@oy=\z@ \apr@xs=\z@ \apr@xe=\wd\apr@box \apr@ys=\z@ \apr@ye=\z@
       \apr@L=\z@ \apr@R=\wd\apr@box \apr@dotx=-\apr@bleed \apr@onpagefalse
       \apr@H=\ht\strutbox \apr@D=\dp\strutbox
@@ -640,9 +614,8 @@
       \apr@bib@decide
       % dots style: an award badge (icon = {award}) is part of the marker,
       % so an entry with one gets a mark even when it is not highlighted
-      \def\apr@markbadge{}\def\apr@markatlabel{}%
+      \def\apr@markbadge{}%
       \ifx\apr@style\apr@style@dots
-        \iffieldundef{labelnumber}{}{\def\apr@markatlabel{x}}%
         \iffieldequalstr{usera}{award}{\def\apr@markbadge{award}}{%
           \iffieldequalstr{usera}{images/hm.png}{\def\apr@markbadge{award}}{}}%
       \fi
@@ -655,7 +628,7 @@
         \edef\apr@tmp{\noexpand\apr@mark@start{\apr@c}{\apr@c@two}}%
         \apr@tmp
       \fi
-      \def\apr@markbadge{}\def\apr@markatlabel{}\def\apr@markthird{}}%
+      \def\apr@markbadge{}\def\apr@markthird{}}%
     \renewcommand\aprsetentrycolour{%
       \apr@bib@decide
       \let\aprentrycolour\apr@c

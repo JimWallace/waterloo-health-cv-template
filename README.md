@@ -220,8 +220,8 @@ every CV that uses the template.
   `@committee`, `@award`, `@service` and `@course` with the fields in `uwhealthcv.dbx`, and `\me` inside a
   grant's `investigators`. Documented in `cv-records.tex`.
 - For other record types: `\aprtypecategory{type}{colour}`, `\aprsetentrycolour`, `\aprentrymark`
-  and `\aprmarkleftof{label}`
-  (`aprcv.sty`).
+  (`aprcv.sty`). `\aprmarkleftof{label}` is still accepted but does nothing
+  since v0.5.1: every marker sits in one column left of the text block.
 - biblatex categories: `aprteaching`, `aprservice`, `apraward`, `aprnone`,
   `aprinclude`, `apralsoteaching`, `apralsoresearch`, `apralsoservice`,
   `apralsoaward`.
