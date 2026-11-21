@@ -5,6 +5,8 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+## v0.8.0 — 2026-11-21
+
 An addition: nothing for a CV to change.
 
 - `\cvname` prints the name set with `\cvowner`, so a CV sets its owner's
