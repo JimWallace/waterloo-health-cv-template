@@ -18,6 +18,9 @@ template warns when a CV uses another size.
   publications, students) has its marker just left of that column, next to
   the entry; one that starts at the text block (a table row) keeps its marker
   at the text block. The rosette now sits about 0.85in from the paper edge.
+- Dots style: a rosette with no dots (an award badge on an entry outside the
+  review period) sits where the dots would be, next to the entry, instead of
+  in the slot to their left.
 
 ## v0.6.0 — 2026-11-21
 

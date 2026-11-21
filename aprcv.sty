@@ -404,7 +404,13 @@
   \fi
   \apr@rosettefill
   \ifx\apr@tmpc\@empty\else\ifdefined\cvawardbadgepaths
-    \apr@ra=\dimexpr\apr@dotx-\apr@dotm-6\apr@dotr-4\apr@dotg-\apr@slot/2\relax
+    % beside the dots, or, with no dots (a badge outside the review
+    % period), where the dots would be, next to the entry
+    \ifx\apr@pc\@empty
+      \apr@ra=\dimexpr\apr@dotx-\apr@dotm-\apr@slot/2\relax
+    \else
+      \apr@ra=\dimexpr\apr@dotx-\apr@dotm-6\apr@dotr-4\apr@dotg-\apr@slot/2\relax
+    \fi
     \apr@rb=\dimexpr\apr@ys+(\apr@H-\apr@D)/2-\apr@oy\relax
     % medallion (10,15.5) centred on the first line, ribbons hanging below
     \put(0,0){\begin{tikzpicture}[overlay,line join=round,
