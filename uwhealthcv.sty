@@ -4,7 +4,7 @@
 %% supplies only its own content:
 %%
 %%   \input{uwhealthcv-pdfa}     % PDF/A-2b output (optional; see that file)
-%%   \documentclass[12pt]{article}
+%%   \documentclass[11pt]{article}   % the Faculty's format is 11pt
 %%   \usepackage{uwhealthcv}
 %%   \addbibresource{mycv.bib}
 %%   \setreviewperiod{2025}{2026}
@@ -36,6 +36,12 @@
 \DeclareOption{apr}{\PassOptionsToPackage{apr}{aprcv}}
 \DeclareOption{plain}{\PassOptionsToPackage{plain}{aprcv}}
 \ProcessOptions\relax
+
+% The Faculty of Health's format is set in 11pt Times (NSERC-formatting.tex)
+\ifnum0\@ptsize=1 \else
+  \PackageWarningNoLine{uwhealthcv}{The Faculty of Health CV format is 11pt:\MessageBreak
+    use \protect\documentclass[11pt]{article}}
+\fi
 
 \RequirePackage{enumitem}
 \RequirePackage[table,xcdraw]{xcolor}
