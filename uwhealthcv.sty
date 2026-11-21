@@ -67,7 +67,8 @@
 %
 %   \cvsection{TITLE}           a section heading (bold)
 %   \cvsubheading{Label:}       a label over a list, kept with the list
-%   \begin{cvlist}[itemsep]     an unnumbered, unindented list of \cvitem
+%   \begin{cvlist}[itemsep]     an unnumbered list of \cvitem in the
+%                               content column (0.5in)
 %     \cvitem text              (itemsep defaults to -5pt)
 %   \end{cvlist}
 %   \begin{cvbulletlist}[itemsep] the same, with a bullet hanging to the left
@@ -78,13 +79,19 @@
 %   \end{cvgroup}
 %   \begin{cvparts}             lettered parts a), b), c) ... of a section
 %     \cvpart{Title}            one part, with a bold title
+%     \cvpart*{Title}           one part, with a plain title
 %   \end{cvparts}
+%
+% The indents and blank lines follow the Faculty's format (see "The Faculty
+% of Health grid and spacing" below): a CV needs no \\ or \vspace between
+% a heading and its list, or between parts.
 %   \printcategory[J]{journal}  print one bibliography category, numbered
 %                               J1, J2, ... (no prefix: 1, 2, ...)
 %
 % Grants and supervision are biblatex records: see cv-records.tex.
-\newcommand\cvsection[1]{\cv@heading{H1}{\textbf{#1}}}
-\newcommand\cvsubheading[1]{\keepwithnext\cv@heading{H2}{#1}}
+\newcommand\cvsection[1]{\global\cv@afterlabelfalse\cv@heading{H1}{\textbf{#1}}}
+\newcommand\cvsubheading[1]{%
+  \cv@block\keepwithnext\cv@heading{H2}{#1}\global\cv@afterlabeltrue}
 % Tagged PDF (uwhealthcv-pdfa.tex): \ifcv@tagged is true when the kernel tags
 % the document. \cv@heading{H1}{text} tags its text as a heading. Headings
 % here often share a paragraph with what follows ("NAME/DATE: Name", or a
@@ -159,22 +166,86 @@
 % reads \item[] as no label and would print the default bullet, so that is
 % emptied too (before \begin{itemize}, which reads it).
 \newcommand\cv@nobullets{\def\labelitemi{}\def\labelitemii{}}
+
+%% The Faculty of Health grid and spacing, from its vitae format
+%% (faculty_of_health_vitae_format.doc, linked from
+%% uwaterloo.ca/health/faculty-staff/curriculum-vitae).
+% Indents, from the left margin: a part's letter at 0.25in, its title and
+% every list's content at 0.5in (the content column). A list inside a part
+% starts at the part's title, so it isn't indented again.
+\newlength\cvletterindent  \setlength\cvletterindent{0.25in}
+\newlength\cvcontentindent \setlength\cvcontentindent{0.5in}
+% the label column of a degree group (\printsupervision, cvgroup): labels
+% sit left-aligned in the content column and the list starts after the
+% widest (MMath, unless the CV sets \cvdegreelabelwidth after
+% \begin{document})
+\newlength\cvdegreelabelwidth
+\AtBeginDocument{\settowidth\cvdegreelabelwidth{MMath}}
+\newlength\cvdegreelabelsep \setlength\cvdegreelabelsep{1em}
+% \cv@cm: the left margin that puts a list's text in the content column
+\newlength\cv@cm
+\newcommand\cv@setcm{%
+  \setlength\cv@cm{\dimexpr\cvcontentindent-\@totalleftmargin\relax}%
+  \ifdim\cv@cm<\z@ \setlength\cv@cm{\z@}\fi}
+% Vertical spacing: one blank line after a section heading and between
+% blocks at the same level (parts, labelled lists, degree groups); a part's
+% title or a \cvsubheading label is followed directly by its content. Lists
+% add no space of their own (topsep 0); each block starts with \cv@block,
+% which adds the blank line unless it comes straight after a label.
+\newif\ifcv@afterlabel
+\newcommand\cv@block{%
+  \par
+  \ifcv@afterlabel\else\addvspace{\baselineskip}\fi
+  \global\cv@afterlabelfalse}
+\def\cv@notopsep{\topsep\z@\partopsep\z@}
+\g@addto@macro\@listI{\cv@notopsep}\let\@listi\@listI
+\g@addto@macro\@listii{\cv@notopsep}
+\g@addto@macro\@listiii{\cv@notopsep}
+\g@addto@macro\@listiv{\cv@notopsep}
+\g@addto@macro\@listv{\cv@notopsep}
+\g@addto@macro\@listvi{\cv@notopsep}
+% a \\ straight after a part's title would leave an empty line before its
+% content; the title already ends its line, so it is dropped
+\newcommand\cv@dropnewline{\@ifnextchar\\{\cv@dropnewline@}{}}
+\def\cv@dropnewline@\\{\@ifstar{\@ifnextchar[\cv@dropopt{}}{\@ifnextchar[\cv@dropopt{}}}
+\def\cv@dropopt[#1]{}
+
+% itemsep is added to the list's 5pt parsep, at any depth (so the default,
+% -5pt, sets the items on consecutive lines)
 \newenvironment{cvlist}[1][-5pt]
-  {\cv@nobullets\begin{itemize}\setlength{\labelsep}{0em}\setlength{\itemsep}{#1}}
+  {\cv@block\cv@setcm\cv@nobullets
+   \begin{itemize}[leftmargin=\cv@cm, parsep=5pt]\setlength{\labelsep}{0em}\setlength{\itemsep}{#1}}
   {\end{itemize}}
 \newcommand\cvitem{\item[]}
 % text starts where cvlist's does; the bullet sits in the margin before it.
 % Ragged right, so long titles in a narrower (nested) list wrap cleanly.
 \newenvironment{cvbulletlist}[1][0pt]
-  {\begin{itemize}[label=\textbullet, labelsep=0.5em, itemsep=#1]\raggedright\let\cvitem\item}
+  {\cv@block\cv@setcm
+   \begin{itemize}[label=\textbullet, leftmargin=\cv@cm, labelsep=0.5em, itemsep=#1]%
+   \raggedright\let\cvitem\item}
   {\end{itemize}}
+% a degree group: the label left-aligned in the content column, the list
+% after the label column
+\newcommand\cv@degreelist{%
+  \cv@block\cv@setcm
+  \begin{enumerate}[leftmargin=\dimexpr\cv@cm+\cvdegreelabelwidth+\cvdegreelabelsep\relax,
+    labelwidth=\cvdegreelabelwidth, labelsep=\cvdegreelabelsep, align=left]}
 \newenvironment{cvgroup}[1]
-  {\begin{enumerate}\item[#1]\leavevmode}
+  {\cv@degreelist\item[#1]\leavevmode\global\cv@afterlabeltrue}
   {\end{enumerate}}
 \newenvironment{cvparts}
-  {\begin{enumerate}[label=\alph*)]}
-  {\end{enumerate}}
-\newcommand\cvpart[1]{\item \textbf{#1}}
+  {\cv@block
+   \begin{enumerate}[label=\alph*), leftmargin=\cvcontentindent,
+     labelwidth=\dimexpr\cvcontentindent-\cvletterindent\relax, labelsep=0pt,
+     align=left, itemsep=\baselineskip, parsep=0pt]}
+  {\end{enumerate}\global\cv@afterlabelfalse}
+% \cvpart{Title}: a part with a bold title (Publications, Graduate Student
+% Supervision); \cvpart*{Title}: a plain one (Presentations, Service), as the
+% Faculty's format sets them
+\NewDocumentCommand\cvpart{sm}{%
+  \item \IfBooleanTF{#1}{#2}{\textbf{#2}}%
+  \global\cv@afterlabeltrue
+  \cv@dropnewline}
 % The prefix is printed as part of the label, not set with biblatex's
 % labelprefix: each labelprefix is a separate refcontext, and biber writes a
 % full copy of every entry into the .bbl for each one, which can exhaust
@@ -185,6 +256,7 @@
 \NewDocumentCommand\printcategory{om}{%
   \begingroup
   \IfNoValueTF{#1}{}{\def\cv@labelprefix{#1}}%
+  \cv@block
   \printbibliography[category={#2},resetnumbers=true,heading=none]%
   \endgroup}
 

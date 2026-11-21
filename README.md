@@ -211,7 +211,13 @@ every CV that uses the template.
   `\sethighlightstrength`, `\sethighlightstyle`, `\keepwithnext`,
   `\sectionbreak`, `\usvardate`, `\monthyear`, `\extlink`.
 - Section markup: `\cvsection`, `\cvsubheading`, `cvlist` and `cvbulletlist` with `\cvitem`, `cvgroup`, `cvparts`
-  with `\cvpart`, `\printcategory`. Documented in the `uwhealthcv.sty` header.
+  with `\cvpart` (bold title) and `\cvpart*` (plain title), `\printcategory`. Documented in the `uwhealthcv.sty` header.
+  The indents and blank lines follow the Faculty of Health's vitae format (the
+  `.doc` linked from uwaterloo.ca/health/faculty-staff/curriculum-vitae): a
+  part's letter at 0.25in, its title and all list content at 0.5in, one blank
+  line after a section heading and between parts, none between a part's title
+  and its content. The lengths `\cvletterindent`, `\cvcontentindent` and
+  `\cvdegreelabelwidth` set the grid.
 - Records: `\cvowner`, `\printgrants`, `\printsupervision{degree}`,
   `\printcommitteecounts{groups}`, `\printcommittees[period]{group}`,
   `\cvcommitteegroup{group}{degrees}`, `\printawards`,

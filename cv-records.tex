@@ -145,6 +145,7 @@
   {\def\\{}\let\cv@grantline\cv@measureline\cv@rows}%
   \setlength\cvgranttitlewidth{\dimexpr\linewidth-\cvgrantnamewidth
     -\cvgrantagencywidth-\cv@amountwd-\cv@tenurewd-8\tabcolsep\relax}%
+  \cv@block\setlength\LTpre{\z@}% one blank line after the heading (uwhealthcv.sty)
   \begin{longtable}[c]{@{}>{\raggedright\arraybackslash}p{\cvgrantnamewidth}
                        >{\raggedright\arraybackslash}p{\cvgrantagencywidth}
                        l l
@@ -214,7 +215,7 @@
 \defbibcheck{cvdegree}{\iffieldequals{degree}{\cv@degree}{}{\skipentry}}
 
 \newcommand\printsupervision[1]{%
-  \begin{enumerate}
+  \cv@degreelist% the degree's label column (uwhealthcv.sty)
     \item[#1]%
     \def\cv@degree{#1}%
     \begin{refcontext}[sorting=cvsupervision]%
@@ -238,7 +239,7 @@
 
 % the same layout as cvlist (uwhealthcv.sty)
 \defbibenvironment{cvawards}
-  {\cv@nobullets\begin{itemize}%
+  {\cv@block\cv@setcm\cv@nobullets\begin{itemize}[leftmargin=\cv@cm, parsep=5pt]%
    \setlength{\labelsep}{0em}\setlength{\itemsep}{-5pt}%
    \renewcommand*{\finentrypunct}{}}
   {\end{itemize}}
@@ -474,7 +475,8 @@
     \fi}}
 
 \defbibenvironment{cvcommittees}
-  {\begin{itemize}[label=\textbullet, labelsep=0.5em, itemsep=0pt]\raggedright
+  {\cv@block\cv@setcm
+   \begin{itemize}[label=\textbullet, leftmargin=\cv@cm, labelsep=0.5em, itemsep=0pt]\raggedright
    \renewcommand*{\finentrypunct}{}}
   {\end{itemize}}
   {\item}
@@ -599,6 +601,7 @@
   \expandafter\cv@coursetable\expandafter{\cv@colspec}%
   \endgroup}
 \newcommand\cv@coursetable[1]{%
+  \cv@block\setlength\LTpre{\z@}% one blank line after the heading (uwhealthcv.sty)
   \begin{longtable}[c]{#1}
   \cv@head \\
   \endhead

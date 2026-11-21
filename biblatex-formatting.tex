@@ -96,7 +96,12 @@
 }
 
 
-\setlength{\marginparsep}{-10pt} 
+\setlength{\marginparsep}{-10pt}
+
+% A URL's break points don't stretch (biblatex's default is 0mu plus 3mu), so
+% a justified line that ends in a URL stretches its word spaces instead of
+% spreading the URL out ("https : / / example . org")
+\biburlbigskip=0mu\relax
 
 
 
