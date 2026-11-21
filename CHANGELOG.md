@@ -5,8 +5,11 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
-An addition: nothing for a CV to change, though a CV can drop the `\\` and
-blank lines it used for spacing (see below).
+## v0.6.0 — 2026-11-21
+
+An addition and fixes: nothing for a CV to change, though a CV can drop the
+`\\` and blank lines it used for spacing (see below), and can use `\cvpart*`
+for the format's plain part titles.
 
 - Indents follow the Faculty of Health's vitae format (the `.doc` linked from
   its CV page): a part's letter (a), b) ...) at 0.25in, its title and every
@@ -32,9 +35,6 @@ blank lines it used for spacing (see below).
 - A URL in a bibliography entry no longer spreads out on a justified line
   ("https : / / example . org"): its break points don't stretch
   (`\biburlbigskip`), so the line's word spaces take up the slack.
-
-A fix: nothing for a CV to change.
-
 - Dots style: every entry's marker now sits in one column, right-aligned
   against the left edge of the text block. Before, numbered publications put
   theirs left of the [J1] label, supervision lists left of each degree label
