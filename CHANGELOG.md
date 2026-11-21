@@ -5,6 +5,8 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+## v0.7.0 — 2026-11-21
+
 A change a CV makes: `\documentclass[11pt]{article}` (was 12pt). The
 template warns when a CV uses another size.
 
