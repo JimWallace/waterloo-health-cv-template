@@ -5,6 +5,20 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+A change a CV makes: `\documentclass[11pt]{article}` (was 12pt). The
+template warns when a CV uses another size.
+
+- The page and type are the Faculty of Health vitae format's (the `.doc`
+  linked from its CV page): margins left 1in, right 1.06in, top 0.83in,
+  bottom 0.54in, the header 0.5in from the top of the page; 11pt Times (TeX
+  Gyre Termes), headings included. Before: 0.75in margins and 12pt.
+- The running header is the format's: the candidate's name (`\cvowner`) on
+  the left and the date and page number on the right, in bold italic.
+- Dots style: an entry that starts in the content column (lists,
+  publications, students) has its marker just left of that column, next to
+  the entry; one that starts at the text block (a table row) keeps its marker
+  at the text block. The rosette now sits about 0.85in from the paper edge.
+
 ## v0.6.0 — 2026-11-21
 
 An addition and fixes: nothing for a CV to change, though a CV can drop the

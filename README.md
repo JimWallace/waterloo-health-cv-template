@@ -160,7 +160,7 @@ The CV's main file:
 
 ```latex
 \input{uwhealthcv-pdfa}
-\documentclass[12pt]{article}
+\documentclass[11pt]{article}
 \usepackage{uwhealthcv}
 \addbibresource{mycv.bib}
 \setreviewperiod{2025}{2026}

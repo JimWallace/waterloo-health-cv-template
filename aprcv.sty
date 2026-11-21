@@ -163,8 +163,8 @@
 \newdimen\apr@badgew \apr@badgew=11pt % width of the marker's award slot
 \newdimen\apr@slot  % award slot width actually reserved (0 in a sample
                      % without a rosette)
-\newdimen\apr@dotx  % right edge of the marker: the left of the text block
-                     % (one column for every entry), or a sample
+\newdimen\apr@dotx  % right edge of the marker: the content column or the
+                     % left of the text block (\apr@setcols), or a sample
 
 % two-colour style: halves (left half primary, right half secondary), split
 % (primary on top, secondary below), blend (primary fading into secondary
@@ -208,7 +208,7 @@
 % only the dots style's marker is drawn
 \def\apr@markonly{}
 % \aprmarkleftof{label}: kept so CVs that call it still compile; it does
-% nothing, since every marker now sits in one column left of the text block
+% nothing: markers sit in the content column or at the text block
 \newcommand\aprmarkleftof[1]{}
 \newcommand\apr@mark@start[2]{%
   \ifvmode\leavevmode\fi
@@ -358,7 +358,7 @@
   \ifx\apr@style\apr@style@dots \apr@marker \fi}
 
 % dots style: one marker left of the entry's first line, right-aligned
-% against the text block: an award slot, then three dots (research,
+% against the content column or the text block (\apr@setcols): an award slot, then three dots (research,
 % teaching, service) nearest the entry, each filled in full colour when the
 % entry's primary, second or third colour is that category. The award slot holds
 % the rosette -- filled when the entry is an award or
@@ -417,13 +417,21 @@
   \fi}
 
 % #5: marker only (a table row); #7: third colour (dots style only). The
-% marker's right edge is always the left of the text block, so every entry's
-% marker is in one column; #4 and #6 (the marker's own edge and a compact
-% marker, before v0.5.1) are ignored. Records from an earlier run may lack
-% #3 to #7
+% marker's right edge is one of two columns: the content column
+% (\cvcontentindent, uwhealthcv.sty) for an entry that starts there or
+% further in -- lists, publications, students -- so the dots sit close to
+% it, or the left of the text block for one that starts further out, such
+% as a table row. \apr@L (the entry's left edge) is set before this. #4 and
+% #6 (the marker's own edge and a compact marker, before v0.6.0) are
+% ignored. Records from an earlier run may lack #3 to #7
 \def\apr@setcols#1#2#3#4#5#6#7#8\@nil{%
   \def\apr@pc{#1}\def\apr@sc{#2}\def\apr@tc{#7}\def\apr@badge{#3}\def\apr@markonly{#5}%
-  \apr@dotx=\dimexpr1in+\hoffset+\oddsidemargin\relax}
+  \apr@dotx=\dimexpr1in+\hoffset+\oddsidemargin\relax
+  \ifdefined\cvcontentindent
+    \ifdim\apr@L<\dimexpr\apr@dotx+\cvcontentindent-1pt\relax\else
+      \advance\apr@dotx\cvcontentindent
+    \fi
+  \fi}
 
 \def\apr@draw@one#1{%
   \ifcsname apr@S@#1\endcsname\ifcsname apr@E@#1\endcsname

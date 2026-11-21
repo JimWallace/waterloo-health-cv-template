@@ -1,4 +1,16 @@
-\usepackage[margin=0.75in]{geometry}
+% The page of the Faculty of Health's vitae format (the .doc linked from
+% uwaterloo.ca/health/faculty-staff/curriculum-vitae), whose settings are in
+% twips (1/1440in): left 1440, right 1526, top 1195 (to the body text),
+% bottom 778, header 720 from the top of the page, footer 245 from the
+% bottom. The header line (11pt) is 13.6pt high, so the gap below it makes
+% up the rest of the top margin. The type is 11pt Times (TeX Gyre Termes
+% below): a CV uses \documentclass[11pt]{article}.
+\usepackage[letterpaper,
+  left=1in, right=1.059722in,     % 1440, 1526 twips
+  top=0.829861in, bottom=0.540278in, % 1195, 778 twips
+  headheight=13.6pt,
+  headsep=\dimexpr0.329861in-13.6pt\relax, % header at 720 twips
+  footskip=0.370139in]{geometry}  % footer at 245 twips
 \usepackage{mathptmx}% Times for maths (and for text under pdfLaTeX)
 % LuaLaTeX (the template's engine) has no Times text font from mathptmx;
 % TeX Gyre Termes is the same design as an OpenType font.
@@ -52,12 +64,11 @@
 \pagestyle{fancy}
 \fancyhf{}
 \renewcommand{\headrulewidth}{0pt}
-% The 12pt header line needs 14.5pt; raise \topmargin by the same amount so
-% the body stays where geometry put it.
-\addtolength{\topmargin}{-\dimexpr14.5pt-\headheight\relax}
-\setlength{\headheight}{14.5pt}
-%\lhead{} 
-\rhead{\monthyear\today \ \#\thepage}
+% The format's running header: the candidate's name on the left, the date
+% and page number on the right, in bold italic. The name is \cvowner's
+% (cv-records.tex); the first page, with CURRICULUM VITA, has none.
+\lhead{\textbf{\textit{\ifdefined\cv@owner\cv@owner\fi}}}
+\rhead{\textbf{\textit{\monthyear\today \ \#\thepage}}}
 %\pagenumbering{gobble}
 %\cfoot{\thepage}
 
