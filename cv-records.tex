@@ -3,8 +3,10 @@
 % Part of the template, loaded by uwhealthcv.sty after aprcv.sty. The CV
 % keeps the records in .bib files and prints them with:
 %
-%   \cvowner{Name}               whose CV this is: \me in a grant prints it,
-%                                and the PDF title and author use it
+%   \cvowner{Name}               whose CV this is, set once: \cvname prints
+%                                it (NAME/DATE), \me in a grant prints it in
+%                                bold, the running header shows it, and the
+%                                PDF title and author use it
 %   \printgrants                 the RESEARCH GRANTS AND CONTRACTS table,
 %                                newest first (by start, then end year)
 %   \printsupervision{PhD}       one numbered list of students under a
@@ -43,6 +45,8 @@
 \def\cv@owner{}
 \newcommand\cvowner[1]{\def\cv@owner{#1}%
   \hypersetup{pdfauthor={#1}, pdftitle={Curriculum Vitae: #1}}}% PDF/XMP metadata
+% \cvname: the name set with \cvowner, e.g. \cvsection{NAME/DATE:} \cvname, ...
+\newcommand\cvname{\cv@owner}
 
 \DeclareFieldFormat{cvplain}{#1}
 \DeclareFieldFormat{cvcosupervisor}{\mkbibparens{co-supervised with #1}}

@@ -5,6 +5,13 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+An addition: nothing for a CV to change.
+
+- `\cvname` prints the name set with `\cvowner`, so a CV sets its owner's
+  name once: `\cvsection{NAME/DATE:} \cvname, \usvardate\today` matches the
+  running header, the grants table (`\me`) and the PDF's metadata. The
+  example and the starter use it.
+
 ## v0.7.0 — 2026-11-21
 
 A change a CV makes: `\documentclass[11pt]{article}` (was 12pt). The
