@@ -29,6 +29,9 @@ blank lines it used for spacing (see below).
   part titles; SERVICE is in lettered parts; the committee counts are under
   GRADUATE STUDENT SUPERVISION as b) As Committee Member, as in the format; the
   DEGREES RECEIVED table starts at 0.5in, directly under its heading.
+- A URL in a bibliography entry no longer spreads out on a justified line
+  ("https : / / example . org"): its break points don't stretch
+  (`\biburlbigskip`), so the line's word spaces take up the slack.
 
 A fix: nothing for a CV to change.
 
