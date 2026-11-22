@@ -67,7 +67,12 @@ PhD                & University of Waterloo   & 2010 -- 2015 \\
 \sectionbreak
 \cvsection{ACADEMIC AWARDS AND DISTINCTIONS:}
 
-\printawards
+% awards grouped by their level field; \printawards alone prints them all
+\cvsubheading{Research Awards:}
+    \printawards[research]
+
+\cvsubheading{Recognition for Peer Review:}
+    \printawards[recognition]
 
 \sectionbreak
 \cvsection{SCHOLARLY AND PROFESSIONAL ACTIVITIES:}
@@ -133,6 +138,10 @@ Speaker(s) denoted by \dag
 \cvsection{RESEARCH GRANTS AND CONTRACTS:}
 
 \printgrants
+
+% applications awaiting a decision (status = {Submitted} in example.bib)
+\cvsubheading{Submitted:}
+\printgrants[Submitted]
 
 \sectionbreak
 \keepwithnext[6]
