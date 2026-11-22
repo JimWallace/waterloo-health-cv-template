@@ -232,6 +232,8 @@ every CV that uses the template.
   `aprinclude`, `apralsoteaching`, `apralsoresearch`, `apralsoservice`,
   `apralsoaward`.
 - Per-entry detail line: `\setentrydetail{key}{text}` (`biblatex-formatting.tex`).
+- Generated numbers: `\setcvnumber{name}{value}` and `\cvnumber{name}` (`uwhealthcv.sty`),
+  for counts a script writes from the record and the CV's sentences print.
 - Bib field: `icon` (an image path, or `award` for the rosette).
 - File the template reads from the CV: `apr-formatting.tex` (optional).
 - File a CV inputs before `\documentclass`: `uwhealthcv-pdfa.tex` (optional).

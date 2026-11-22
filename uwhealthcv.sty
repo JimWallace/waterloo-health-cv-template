@@ -66,6 +66,18 @@
 \RequirePackage{aprcv}
 \input{cv-records}
 
+% \setcvnumber{name}{value} and \cvnumber{name}: a count a script generates
+% from the record (papers in the review period, how many a trainee led),
+% defined in a file the CV inputs and printed in the CV's own sentences, so
+% the sentence stays true as the record grows. An undefined name prints a
+% bold ?? and warns, as an undefined \ref does.
+\newcommand\setcvnumber[2]{\csgdef{cvnumber/#1}{#2}}
+\newcommand\cvnumber[1]{%
+  \ifcsdef{cvnumber/#1}
+    {\csuse{cvnumber/#1}}
+    {\textbf{??}\PackageWarning{uwhealthcv}{Number `#1' is not defined
+      (no \string\setcvnumber{#1})}}}
+
 %% ------------------------------------------------------- section markup
 % The building blocks of the Faculty of Health layout, so a CV names its
 % structure instead of repeating the list settings. Spacing between sections

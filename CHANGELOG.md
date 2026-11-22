@@ -5,6 +5,16 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+Additions: nothing for a CV to change.
+
+- Generated numbers. `\setcvnumber{name}{value}` defines a number (a count
+  a script writes from the record, such as the papers in the review period
+  a trainee led) and `\cvnumber{name}` prints it, so a sentence the owner
+  wrote stays true as the record grows. An undefined name prints a bold
+  **??** and a warning. A CV that defined these itself with
+  `\providecommand` keeps working, and its definitions give way to these.
+  The example's APR note uses one.
+
 ## v0.9.1 — 2026-11-22
 
 Fixes: nothing for a CV to change.
