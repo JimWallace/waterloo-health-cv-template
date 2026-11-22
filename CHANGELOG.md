@@ -5,6 +5,26 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+Additions: nothing for a CV to change.
+
+- Generated numbers. `\setcvnumber{name}{value}` defines a number (a count
+  a script writes from the record, such as the papers in the review period
+  a trainee led) and `\cvnumber{name}` prints it, so a sentence the owner
+  wrote stays true as the record grows. An undefined name prints a bold
+  **??** and a warning. A CV that defined these itself with
+  `\providecommand` keeps working, and its definitions give way to these.
+  The example's APR note uses one.
+- A review copy that marks missing data. With the `gaps` option (or
+  `\def\cvshowgaps{}` before the package loads, as
+  `example/example-gaps.tex` does), missing data prints in orange, a colour
+  none of the APR highlights use: `\setentrygap{key}{text}` adds
+  "Missing: text" under any entry (publications and every record type),
+  `\cvgap{text}` marks a spot in running text, and a grant's blank amount,
+  tenure, agency, title or role and an undefined `\cvnumber` are marked
+  without being asked. Without the option nothing changes, so a CV can keep
+  its gap list in the source and build the review copy alongside the plain
+  and APR versions.
+
 ## v0.9.1 — 2026-11-22
 
 Fixes: nothing for a CV to change.

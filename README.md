@@ -232,6 +232,13 @@ every CV that uses the template.
   `aprinclude`, `apralsoteaching`, `apralsoresearch`, `apralsoservice`,
   `apralsoaward`.
 - Per-entry detail line: `\setentrydetail{key}{text}` (`biblatex-formatting.tex`).
+- Generated numbers: `\setcvnumber{name}{value}` and `\cvnumber{name}` (`uwhealthcv.sty`),
+  for counts a script writes from the record and the CV's sentences print.
+- Missing data (`uwhealthcv.sty`): the `gaps` option, or `\def\cvshowgaps{}` before the
+  package loads, makes a review copy that marks missing data in orange (`CVgap`,
+  `CVgapText`); `\setentrygap{key}{text}` names what an entry lacks, and `\cvgap{text}`
+  marks a spot in running text. Without it they print nothing. See
+  `example/example-gaps.tex`.
 - Bib field: `icon` (an image path, or `award` for the rosette).
 - File the template reads from the CV: `apr-formatting.tex` (optional).
 - File a CV inputs before `\documentclass`: `uwhealthcv-pdfa.tex` (optional).

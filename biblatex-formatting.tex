@@ -80,7 +80,12 @@
     \edef\cv@detailkey{\thefield{entrykey}}%
     \ifcsdef{cv@detail@\cv@detailkey}
       {\aprlinemark\newline{\small\csuse{cv@detail@\cv@detailkey}}}%
-      {}}
+      {}%
+    % the gaps review copy: what the entry is missing (\setentrygap, uwhealthcv.sty)
+    \cv@entrygap
+    \ifx\cv@thisgap\@empty\else
+      \ifcsdef{cv@detail@\cv@detailkey}{}{\aprlinemark}%
+      \newline\cv@gapnote{\cv@thisgap}\fi}
 
 % Redefine the bibliography driver for the "inproceedings" type
 \DeclareBibliographyDriver{inproceedings}{%

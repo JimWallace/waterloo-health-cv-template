@@ -100,6 +100,7 @@
   \gdef\cv@inv{}%
   \printlist[cvcollect]{investigators}%
   \aprsetentrycolour
+  \cv@entrygap
   \ifdefempty\cv@rows{}{\gappto\cv@rows{\\}}% blank row between grants
   \xappto\cv@rows{%
     \noexpand\cv@grantline
@@ -110,7 +111,9 @@
       {\cv@field{amount}}%
       {\cv@field{year}}%
       {\cv@field{endyear}}%
-      {\cv@field{title}}%
+      {\cv@field{title}%
+       \ifx\cv@thisgap\@empty\else\noexpand\newline
+         \noexpand\cv@gapnote{\expandonce\cv@thisgap}\fi}%
       {\expandonce\aprentrymark}}}
 
 % \cv@grantline{colour}{role}{names}{agency}{amount}{year}{endyear}{title}{mark}
@@ -118,15 +121,20 @@
 % style's marker (\aprentrymark)
 \newcommand\cv@grantline[9]{%
   \ifx\relax#1\relax\else\rowcolor{#1}\fi
-  #9\def\me{\textbf{\cv@owner\ifx\relax#2\relax\else\space(#2)\fi}}#3 &
-  #4 &
+  #9\def\me{\textbf{\cv@owner\ifx\relax#2\relax\ifcvgaps\space(\cv@gapbox{role})\fi
+    \else\space(#2)\fi}}#3 &
+  \cv@orgap{#4}{agency} &
   \cv@amount{#5} &
   \cv@tenure{#6}{#7} &
-  #8 \\*}
-% an application may not have its amount yet: the cell stays blank
-\newcommand\cv@amount[1]{\ifx\relax#1\relax\else%
+  \cv@orgap{#8}{title} \\*}
+% an application may not have its amount yet: the cell stays blank (marked in
+% the gaps review copy)
+\newcommand\cv@amount[1]{\ifx\relax#1\relax\cv@gapbox{amount}\else%
   \$\num[group-separator={,},group-minimum-digits=4]{#1}\fi}
-\newcommand\cv@tenure[2]{#1\ifx\relax#2\relax\else\ -- #2\fi}
+\newcommand\cv@tenure[2]{\ifx\relax#1\relax\cv@gapbox{tenure}\else
+  #1\ifx\relax#2\relax\else\ -- #2\fi\fi}
+% \cv@orgap{text}{what}: the text, or the gaps mark when it is empty
+\newcommand\cv@orgap[2]{\ifx\relax#1\relax\cv@gapbox{#2}\else#1\fi}
 
 % \cv@widest\len{text}: widen \len (globally) to fit text
 \newcommand\cv@widest[2]{%
@@ -564,11 +572,14 @@
 \gdef\cv@courserows{}
 \DeclareBibliographyDriver{course}{%
   \aprsetentrycolour
+  \cv@entrygap
   \xappto\cv@courserows{%
     \noexpand\cv@courseline
       {\expandonce\aprentrycolour}%
       {\noexpand\cv@term{\cv@field{year}}{\cv@field{month}}}%
-      {\noexpand\cv@coursecell{\cv@field{course}}{\cv@field{title}}{\cv@field{level}}{\cv@field{note}}}%
+      {\noexpand\cv@coursecell{\cv@field{course}}{\cv@field{title}}{\cv@field{level}}{\cv@field{note}}%
+       \ifx\cv@thisgap\@empty\else\noexpand\newline
+         \noexpand\cv@gapnote{\expandonce\cv@thisgap}\fi}%
       {\cv@field{enrolment}}%
       {\noexpand\cv@scores{\cv@field{scp}}}%
       {\noexpand\cv@scores{\cv@field{scpaverage}}}%
