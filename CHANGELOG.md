@@ -5,6 +5,8 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+## v0.10.0 — 2026-11-22
+
 Additions: nothing for a CV to change.
 
 - Generated numbers. `\setcvnumber{name}{value}` defines a number (a count
