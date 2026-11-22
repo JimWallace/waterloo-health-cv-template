@@ -155,6 +155,9 @@
     {\iffieldequals{status}{\cv@grantstatus}{}{\skipentry}}}
 
 \NewDocumentCommand\printgrants{o}{%
+  % end a paragraph a \cvsubheading left open before collecting the rows, so
+  % the tagged PDF closes the heading there (the table is not part of it)
+  \ifvmode\else\par\fi
   \IfValueTF{#1}{\def\cv@grantstatus{#1}}{\def\cv@grantstatus{}}%
   \gdef\cv@rows{}%
   \setbox\z@\vbox{% collect the rows; nothing is printed here
