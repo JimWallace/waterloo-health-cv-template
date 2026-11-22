@@ -14,6 +14,16 @@ Additions: nothing for a CV to change.
   **??** and a warning. A CV that defined these itself with
   `\providecommand` keeps working, and its definitions give way to these.
   The example's APR note uses one.
+- A review copy that marks missing data. With the `gaps` option (or
+  `\def\cvshowgaps{}` before the package loads, as
+  `example/example-gaps.tex` does), missing data prints in orange, a colour
+  none of the APR highlights use: `\setentrygap{key}{text}` adds
+  "Missing: text" under any entry (publications and every record type),
+  `\cvgap{text}` marks a spot in running text, and a grant's blank amount,
+  tenure, agency, title or role and an undefined `\cvnumber` are marked
+  without being asked. Without the option nothing changes, so a CV can keep
+  its gap list in the source and build the review copy alongside the plain
+  and APR versions.
 
 ## v0.9.1 — 2026-11-22
 

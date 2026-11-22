@@ -33,9 +33,16 @@
 \NeedsTeXFormat{LaTeX2e}[2020/10/01]
 \ProvidesPackage{uwhealthcv}[2026/11/22 v0.9.1 Faculty of Health CV format]
 
+% gaps: a review copy that marks missing data (see "missing data" below)
+\newif\ifcvgaps
+\DeclareOption{gaps}{\cvgapstrue}
 \DeclareOption{apr}{\PassOptionsToPackage{apr}{aprcv}}
 \DeclareOption{plain}{\PassOptionsToPackage{plain}{aprcv}}
 \ProcessOptions\relax
+% \def\cvshowgaps{} before \usepackage{uwhealthcv} does the same as the gaps
+% option; a wrapper file (gaps.tex) can set it without an "unknown option"
+% error on template versions that predate it
+\ifdefined\cvshowgaps\cvgapstrue\fi
 
 % The Faculty of Health's format is set in 11pt Times (NSERC-formatting.tex)
 \ifnum0\@ptsize=1 \else
@@ -75,8 +82,35 @@
 \newcommand\cvnumber[1]{%
   \ifcsdef{cvnumber/#1}
     {\csuse{cvnumber/#1}}
-    {\textbf{??}\PackageWarning{uwhealthcv}{Number `#1' is not defined
-      (no \string\setcvnumber{#1})}}}
+    {\textbf{??}\cv@gapbox{#1}\PackageWarning{uwhealthcv}{Number `#1' is not
+      defined (no \string\setcvnumber{#1})}}}
+
+%% ----------------------------------------------------------- missing data
+% The gaps option (or \def\cvshowgaps{}) makes a review copy, for the owner
+% only, that marks missing data in its own colour (CVgap, orange: none of the
+% APR colours) so it can be filled in before a CV goes out. Without it,
+% nothing below prints and the CV is unchanged.
+%   \setentrygap{key}{text}  "Missing: text" under that entry (bibliography
+%                            entries and every record type; a script usually
+%                            writes these from the CV's own rules)
+%   \cvgap{text}             a mark in running text, e.g. \cvgap{year}
+% A grant's blank amount, tenure, agency, title or role is marked without
+% being asked for, and so is an undefined \cvnumber. Change the colours
+% with \definecolor{CVgap}{...} and \definecolor{CVgapText}{...}.
+\definecolor{CVgap}{RGB}{255,140,0}
+\definecolor{CVgapText}{RGB}{170,40,0}
+\newcommand\setentrygap[2]{\csgdef{cv@gap@#1}{#2}}
+\newcommand\cv@gapbox[1]{\ifcvgaps{\setlength\fboxsep{1pt}%
+  \colorbox{CVgap}{\textcolor{black}{\sffamily\footnotesize\bfseries #1?}}}\fi}
+\newcommand\cvgap[1]{\cv@gapbox{#1}}
+\newcommand\cv@gapnote[1]{{\small{\setlength\fboxsep{1pt}%
+  \colorbox{CVgap}{\textcolor{black}{\sffamily\bfseries Missing}}}\space
+  \textcolor{CVgapText}{#1}}}
+% \cv@entrygap: the gap text of the entry being printed (empty if none)
+\newcommand\cv@entrygap{%
+  \ifcvgaps\ifcsdef{cv@gap@\thefield{entrykey}}%
+    {\letcs\cv@thisgap{cv@gap@\thefield{entrykey}}}{\let\cv@thisgap\@empty}%
+  \else\let\cv@thisgap\@empty\fi}
 
 %% ------------------------------------------------------- section markup
 % The building blocks of the Faculty of Health layout, so a CV names its
