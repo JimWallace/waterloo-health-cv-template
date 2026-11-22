@@ -5,6 +5,16 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+## v0.9.1 — 2026-11-22
+
+Fixes: nothing for a CV to change.
+
+- A grant with no `amount` (an application whose budget isn't settled yet)
+  printed nothing in the CV and stopped the build with a siunitx "Invalid
+  number" error. Its amount cell is now blank, like a missing tenure, title
+  or role, so `\printgrants[Submitted]` can list an application before all
+  its details are known. The example shows one.
+
 ## v0.9.0 — 2026-11-22
 
 Additions: nothing for a CV to change.

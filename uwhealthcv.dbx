@@ -15,7 +15,8 @@
 %   status         optional: Submitted (or another status) for an
 %                  application awaiting a decision. \printgrants leaves it
 %                  out; \printgrants[Submitted] prints it (date = the
-%                  tenure applied for)
+%                  tenure applied for). An application's amount, date,
+%                  title and role may wait: missing ones print as blank cells
 %
 % @supervision: one supervised student or postdoc.
 %   author         the student, as "Family, Given"
