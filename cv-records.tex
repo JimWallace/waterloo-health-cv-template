@@ -123,7 +123,9 @@
   \cv@amount{#5} &
   \cv@tenure{#6}{#7} &
   #8 \\*}
-\newcommand\cv@amount[1]{\$\num[group-separator={,},group-minimum-digits=4]{#1}}
+% an application may not have its amount yet: the cell stays blank
+\newcommand\cv@amount[1]{\ifx\relax#1\relax\else%
+  \$\num[group-separator={,},group-minimum-digits=4]{#1}\fi}
 \newcommand\cv@tenure[2]{#1\ifx\relax#2\relax\else\ -- #2\fi}
 
 % \cv@widest\len{text}: widen \len (globally) to fit text
