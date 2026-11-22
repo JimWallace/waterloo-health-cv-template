@@ -5,6 +5,25 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+## v0.9.0 — 2026-11-22
+
+Additions: nothing for a CV to change.
+
+- Awards can be grouped. An `@award` takes an optional `level` (like
+  `@service`; several comma-separated), and `\printawards[research]` prints
+  only the awards whose level names it, so a CV can put research awards,
+  teaching awards and recognitions under their own headings, or print trainee
+  awards under supervision. `\printawards` alone still prints every award.
+- Submitted grants. A `@grant` takes an optional `status` (`Submitted`):
+  `\printgrants` leaves those out, and `\printgrants[Submitted]` prints them
+  in their own table. In the APR version, add a submitted application's key to
+  `aprinclude` to highlight it when its proposed tenure starts after the
+  review period.
+- Start years for students. A `@supervision` takes an optional `started`
+  year, printed as `2019 -- 2022` for a completed student and
+  `In progress (since 2023)` for a current one.
+- The example uses all three.
+
 ## v0.8.1 — 2026-11-21
 
 A fix: nothing for a CV to change.

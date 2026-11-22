@@ -218,9 +218,9 @@ every CV that uses the template.
   line after a section heading and between parts, none between a part's title
   and its content. The lengths `\cvletterindent`, `\cvcontentindent` and
   `\cvdegreelabelwidth` set the grid.
-- Records: `\cvowner` (the name, set once) and `\cvname` (prints it), `\printgrants`, `\printsupervision{degree}`,
+- Records: `\cvowner` (the name, set once) and `\cvname` (prints it), `\printgrants` and `\printgrants[status]`, `\printsupervision{degree}`,
   `\printcommitteecounts{groups}`, `\printcommittees[period]{group}`,
-  `\cvcommitteegroup{group}{degrees}`, `\printawards`,
+  `\cvcommitteegroup{group}{degrees}`, `\printawards` and `\printawards[level]`,
   `\printservice{level}`, `\printcourses[scp]` (with `\cvcoursescplabel` and
   `\cvcourseaveragelabel` for its score headings), the entry types `@grant`, `@supervision`,
   `@committee`, `@award`, `@service` and `@course` with the fields in `uwhealthcv.dbx`, and `\me` inside a

@@ -6,7 +6,7 @@ authors:
   - family-names: Wallace
     given-names: James R.
     orcid: "https://orcid.org/0000-0002-5162-0256"
-version: 0.8.1
-date-released: 2026-11-21
+version: 0.9.0
+date-released: 2026-11-22
 license: LPPL-1.3c
 repository-code: "https://github.com/JimWallace/waterloo-health-cv-template"

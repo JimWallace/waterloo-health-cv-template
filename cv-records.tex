@@ -8,10 +8,17 @@
 %                                bold, the running header shows it, and the
 %                                PDF title and author use it
 %   \printgrants                 the RESEARCH GRANTS AND CONTRACTS table,
-%                                newest first (by start, then end year)
+%                                newest first (by start, then end year):
+%                                the grants with no status (awarded)
+%   \printgrants[Submitted]      the same table for the grants whose status
+%                                is Submitted (any status works: a separate
+%                                table under its own heading for applications
+%                                awaiting a decision)
 %   \printsupervision{PhD}       one numbered list of students under a
 %                                degree label: completed by date, then
-%                                those in progress, by family name
+%                                those in progress, by family name; a
+%                                student with started prints the years
+%                                (2019 -- 2022) or In progress (since 2023)
 %   \printcommitteecounts{MSc, PhD}
 %                                thesis committees: one line per year with
 %                                the number in each group (see the
@@ -19,6 +26,11 @@
 %                                \printcommittees and \cvcommitteegroup)
 %   \printawards                 ACADEMIC AWARDS AND DISTINCTIONS: newest
 %                                first, in file order within a year
+%   \printawards[research]       only the awards whose level names it (like
+%                                \printservice: level may name several), so
+%                                a CV can group its awards under headings
+%                                (research, teaching, recognition, trainee
+%                                ...) or print a group in another section
 %   \printservice{school}        one list of @service records: those whose
 %                                level names it (a record may name several),
 %                                most recent first (open-ended first, then by
@@ -134,11 +146,20 @@
 
 \defbibenvironment{cvcollect}{}{}{}
 
-\newcommand\printgrants{%
+% \printgrants prints the grants with no status; \printgrants[Submitted] those
+% whose status is Submitted (applications awaiting a decision)
+\def\cv@grantstatus{}
+\defbibcheck{cvgrantstatus}{%
+  \ifdefempty\cv@grantstatus
+    {\iffieldundef{status}{}{\skipentry}}%
+    {\iffieldequals{status}{\cv@grantstatus}{}{\skipentry}}}
+
+\NewDocumentCommand\printgrants{o}{%
+  \IfValueTF{#1}{\def\cv@grantstatus{#1}}{\def\cv@grantstatus{}}%
   \gdef\cv@rows{}%
   \setbox\z@\vbox{% collect the rows; nothing is printed here
     \begin{refcontext}[sorting=cvgrants]%
-      \printbibliography[type=grant,env=cvcollect,heading=none]%
+      \printbibliography[type=grant,check=cvgrantstatus,env=cvcollect,heading=none]%
     \end{refcontext}}%
   \begingroup
   \setlength\tabcolsep{\cvgrantcolsep}%
@@ -177,6 +198,8 @@
   July\or August\or September\or October\or November\or December\fi}
 
 % Name (Program), date (or status), Title. Note (co-supervised with X) [Position]
+% With started (the year the student began): 2019 -- 2022, or
+% In progress (since 2023).
 \DeclareBibliographyDriver{supervision}{%
   \usebibmacro{begentry}%
   \printnames[cvfull]{author}%
@@ -185,9 +208,11 @@
   \setunit{\addcomma\space}%
   \iffieldint{year}
     {\printtext{%
+       \iffieldundef{started}{}{\thefield{started}\ -- }%
        \iffieldint{month}{\cv@monthname{\thefield{month}}\space}{}%
        \thefield{year}}}
-    {\printfield[cvplain]{status}}%
+    {\printfield[cvplain]{status}%
+     \iffieldundef{started}{}{\printtext{\space(since \thefield{started})}}}%
   \setunit{\addcomma\space}%
   \printfield[cvplain]{title}%
   \setunit{\addperiod\space}%
@@ -249,9 +274,14 @@
   {\end{itemize}}
   {\item[]}
 
-\newcommand\printawards{%
+% \printawards[level]: only the awards whose level names it (the cvlevel
+% check, below, that \printservice uses)
+\NewDocumentCommand\printawards{o}{%
   \begin{refcontext}[sorting=cvservice]%
-    \printbibliography[type=award,env=cvawards,heading=none]%
+    \IfValueTF{#1}
+      {\def\cv@level{#1}%
+       \printbibliography[type=award,check=cvlevel,env=cvawards,heading=none]}%
+      {\printbibliography[type=award,env=cvawards,heading=none]}%
   \end{refcontext}}
 
 %% ---------------------------------------------------------------- service

@@ -12,12 +12,18 @@
 %   amount         whole dollars, digits only: 1710000
 %   date           tenure: 2016/2021, or 2025 for a single year
 %   title          the short title
+%   status         optional: Submitted (or another status) for an
+%                  application awaiting a decision. \printgrants leaves it
+%                  out; \printgrants[Submitted] prints it (date = the
+%                  tenure applied for)
 %
 % @supervision: one supervised student or postdoc.
 %   author         the student, as "Family, Given"
 %   degree         PDF, PhD, MSc, MMath, MHI, MSW ... (the list it prints under)
 %   date           completion: 2022, or 2024-11 to print the month
 %   status         instead of a date while ongoing: In progress
+%   started        optional: the year the student began (2019), printed
+%                  as 2019 -- 2022, or In progress (since 2019)
 %   title          thesis, project or practicum title
 %   program        optional: the student's graduate program, printed in
 %                  parentheses after the name (Computer Science)
@@ -31,6 +37,10 @@
 %   count          for several of the same: 3 prints "3 x Special recognition ..."
 %   work           the key of the paper or talk it was for, if any (the
 %                  checker makes sure that entry carries icon = {award})
+%   level          optional: which \printawards[<level>] list(s) it prints
+%                  in (research, teaching, recognition, trainee ...);
+%                  several comma-separated. \printawards with no option
+%                  prints every award, whatever its level
 %
 % @service: one line of a SERVICE list.
 %   title          the role or committee as printed: SPHS Research Committee
@@ -97,6 +107,7 @@
   course,
   scp,
   scpaverage,
+  started,
 }
 \DeclareDatamodelFields[type=field,datatype=integer]{amount,count,enrolment,responses}
 
@@ -107,6 +118,7 @@
   amount,
   title,
   note,
+  status,
 }
 \DeclareDatamodelEntryfields[supervision]{
   author,
@@ -117,12 +129,14 @@
   program,
   cosupervisor,
   position,
+  started,
 }
 
 \DeclareDatamodelEntryfields[award]{
   title,
   count,
   work,
+  level,
 }
 \DeclareDatamodelEntryfields[service]{
   title,

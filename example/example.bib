@@ -79,6 +79,18 @@
   title         = {An Active Grant},
 }
 
+% An application awaiting a decision: status = {Submitted} keeps it out of
+% \printgrants; \printgrants[Submitted] lists it (date = the tenure applied for).
+@grant{exampleagency2027submitted,
+  investigators = {\me and Casey Colleague},
+  role          = {PI},
+  agency        = {Example Research Agency},
+  amount        = {750000},
+  date          = {2027/2032},
+  title         = {A Submitted Application},
+  status        = {Submitted},
+}
+
 @grant{exampleagency2018past,
   investigators = {Casey Colleague and \me},
   role          = {Co-I},
@@ -93,12 +105,14 @@
   author       = {Student, Sam},
   degree       = {PhD},
   status       = {In progress},
+  started      = {2023},
 }
 
 @supervision{graduate2020phd,
   author       = {Graduate, Pat},
   degree       = {PhD},
   program      = {Example Program},
+  started      = {2015},
   date         = {2020-07},
   title        = {A Completed Thesis},
   cosupervisor = {Casey Colleague},
@@ -114,23 +128,27 @@
 }
 
 % Awards (fictional). work = {key} ties an award to the paper or talk it
-% was for, which carries icon = {award}.
+% was for, which carries icon = {award}. level groups them:
+% \printawards[research] prints those whose level names research.
 @award{example2026posteraward,
   title = {Example Health Symposium 2026 Best Poster Award},
   date  = {2026},
   work  = {example2026talk},
+  level = {research},
 }
 
 @award{example2025reviews,
   title = {Special recognition for Example Conference 2025 Papers (exceptional reviews)},
   count = {3},
   date  = {2025},
+  level = {recognition},
 }
 
 @award{example2019bestpaper,
   title = {Journal of Example Studies 2019 Best Paper Honourable Mention},
   date  = {2019},
   work  = {example2019journal},
+  level = {research},
 }
 
 % Service roles (fictional), printed by \printservice{<level>}: newest first,
