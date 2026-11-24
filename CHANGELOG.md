@@ -5,6 +5,19 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+## v0.11.0 — 2026-11-24
+
+One addition: nothing for a CV to change.
+
+- `\setentrytag{key}{text}`: a short tag (e.g. "Top 2%") in the margin left
+  of one bibliography entry, kept outside the .bib like `\setentrydetail`
+  so a script can regenerate it. It sits under the entry's badge or APR
+  dots when it has them, so it reads as part of the marker, and otherwise
+  on the entry's first line, 8pt left of its label (measured per entry, so
+  [C22] and [C7] get the same gap). Printed in both the plain and the APR
+  version; `\cventrytagformat` sets its look (small bold by default).
+  Shown in the example.
+
 ## v0.10.0 — 2026-11-22
 
 Additions: nothing for a CV to change.

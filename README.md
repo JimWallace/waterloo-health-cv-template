@@ -232,6 +232,9 @@ every CV that uses the template.
   `aprinclude`, `apralsoteaching`, `apralsoresearch`, `apralsoservice`,
   `apralsoaward`.
 - Per-entry detail line: `\setentrydetail{key}{text}` (`biblatex-formatting.tex`).
+- Per-entry margin tag: `\setentrytag{key}{text}`, a few words (e.g. "Top 2%") left of the
+  entry, under its badge or APR dots when it has them, otherwise on its first line 8pt left of
+  its label; `\cventrytagformat` sets its look (`biblatex-formatting.tex`).
 - Generated numbers: `\setcvnumber{name}{value}` and `\cvnumber{name}` (`uwhealthcv.sty`),
   for counts a script writes from the record and the CV's sentences print.
 - Missing data (`uwhealthcv.sty`): the `gaps` option, or `\def\cvshowgaps{}` before the

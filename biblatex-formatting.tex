@@ -65,7 +65,50 @@
 % follows it: entries with and without a badge start at the same place.
 \renewbibmacro*{begentry}{%
     \printfield{usera}%
+    \cv@entrytag
 }
+
+% \setentrytag{key}{text}: a short tag (two or three words, e.g. "Top 2%")
+% in the margin, right-aligned where the badge and the APR dots end, 6pt
+% left of the content column, so it reads as part of the entry's marker:
+% under the badge or dots when the entry has them (below a rosette's
+% ribbons), otherwise on the first line, 8pt left of the entry's label. Like \setentrydetail it is kept
+% outside the .bib for a script to regenerate. \cventrytagformat sets its
+% look.
+\newcommand\setentrytag[2]{\csgdef{cv@tag@#1}{#2}}
+\newcommand\cventrytagformat[1]{{\scriptsize\bfseries #1}}
+\newlength\cv@tagshift
+\newlength\cv@tagdrop
+\def\cv@entrytag{%
+  \edef\cv@tagkey{\thefield{entrykey}}%
+  \ifcsdef{cv@tag@\cv@tagkey}
+    {\setlength\cv@tagshift{\dimexpr\@totalleftmargin
+       \ifdefined\cvcontentindent-\cvcontentindent\fi+6pt\relax}%
+     % an entry that starts left of the content column: just left of it
+     \ifdim\cv@tagshift<6pt \setlength\cv@tagshift{6pt}\fi
+     % a marker on the first line: the APR dots on a highlighted entry (the
+     % tag fits under them, clear of a rosette beside them), or a badge
+     % (icon) alone, whose rosette's ribbons hang below the line, so the tag
+     % goes under their tips
+     \aprsetentrycolour
+     \setlength\cv@tagdrop{\z@}%
+     \ifcvawardinline\ifdefempty\aprentrycolour{}%
+       {\setlength\cv@tagdrop{\baselineskip}}\fi
+     \ifdim\cv@tagdrop=\z@
+       \iffieldundef{usera}{}{\setlength\cv@tagdrop{1.6\baselineskip}}\fi
+     % beside the label: 8pt left of it, whatever its width (labels are
+     % right-aligned, so [C22] reaches further left than [C5])
+     \ifdim\cv@tagdrop=\z@
+       \settowidth\cv@tagdrop{\printtext[labelnumberwidth]{%
+         \printfield{labelprefix}\printfield{labelnumber}}}%
+       \ifdim\cv@tagdrop>\z@
+         \setlength\cv@tagshift{\dimexpr\cv@tagdrop+\labelsep+8pt\relax}\fi
+       \setlength\cv@tagdrop{\z@}%
+     \fi
+     \llap{\smash{\raisebox{-\cv@tagdrop}{%
+       \cventrytagformat{\csuse{cv@tag@\cv@tagkey}}}}%
+       \hspace{\cv@tagshift}}}%
+    {}}
 
 
 % \setentrydetail{key}{text}: a line of small text printed under one
