@@ -5,6 +5,12 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+- `\extlink`'s arrow no longer turns into the icon's name
+  ("External-Link-Alt") when text is copied from the PDF or extracted
+  (`pdftotext`, ATS and indexing tools): the icon carries an empty
+  ActualText, in tagged and untagged PDFs. The example's contact block
+  now has a link, so CI checks it.
+
 ## v0.11.0 — 2026-11-24
 
 One addition: nothing for a CV to change.
