@@ -5,6 +5,10 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+## v0.12.0 — 2026-11-24
+
+One addition: nothing for a CV to change.
+
 - `\healthmark`: an author mark (‡) for a co-author whose primary
   appointment is in a health, clinical or public health unit, written after
   the family name in the .bib like the trainee `*` and presenter `{\dag}`
