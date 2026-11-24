@@ -77,3 +77,10 @@ jobs:
       - name: PDF/UA-2 and PDF/A-4f (veraPDF)
         working-directory: starter
         run: sh scripts/check_pdfa.sh main.pdf apr.pdf template/example/example.pdf template/example/example-apr.pdf
+      - name: Copied text has no icon names (\extlink's arrow)
+        working-directory: starter
+        run: |
+          sudo apt-get install -y -qq poppler-utils >/dev/null
+          if pdftotext template/example/example.pdf - | grep -n "External-Link"; then
+            echo "::error::The external-link icon's name appears in the example's text."; exit 1
+          fi

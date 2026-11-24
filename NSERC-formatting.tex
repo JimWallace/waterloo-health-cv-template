@@ -47,7 +47,11 @@
 
 % Fancy external links
 \usepackage{fontawesome5}
-\newcommand{\extarrow}{\textsuperscript{\scalebox{0.6}{\faExternalLink*}}}
+% The arrow's empty ActualText keeps copied or extracted text free of the
+% icon's glyph name ("External-Link-Alt").
+\RequirePackage{accsupp}
+\newcommand{\extarrow}{\textsuperscript{%
+  \BeginAccSupp{method=escape,ActualText={}}\scalebox{0.6}{\faExternalLink*}\EndAccSupp{}}}
 \newcommand{\extlink}[2]{\href{#1}{#2\extarrow}}
 
 %\usepackage{bbding}

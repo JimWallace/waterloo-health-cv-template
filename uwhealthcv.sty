@@ -200,7 +200,8 @@
 \cs_new_protected:Npn \__cv_heading_after: { \__cv_heading_after:n { } }
 \cs_new_protected:Npn \__cv_heading_after_space: { \__cv_heading_after:n { ~ } }
 % \extlink's arrow is decoration (the link text says where it goes); without
-% this, screen readers read the icon's glyph name, "External-Link-Alt"
+% this, screen readers read the icon's glyph name, "External-Link-Alt". The
+% empty ActualText does the same for copied and extracted text.
 \legacy_if:nT { cv@tagged }
   {
     \renewcommand \extarrow
@@ -208,7 +209,9 @@
         \textsuperscript
           {
             \tag_mc_end_push: \tag_mc_begin:n { artifact }
+            \BeginAccSupp { method = escape, ActualText = { } }
             \scalebox { 0.6 } { \faExternalLink* }
+            \EndAccSupp { }
             \tag_mc_end: \tag_mc_begin_pop:n { }
           }
       }
