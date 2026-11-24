@@ -85,6 +85,14 @@
     {\textbf{??}\cv@gapbox{#1}\PackageWarning{uwhealthcv}{Number `#1' is not
       defined (no \string\setcvnumber{#1})}}}
 
+% Author marks. A .bib author list marks a trainee with * after the family
+% name and the presenter with {\dag}; \healthmark (a double dagger) marks a
+% co-author whose primary appointment is in a health, clinical or public
+% health unit, written the same way: Family{\healthmark}, Given. The CV says
+% what each mark means near the top of its publications. Redefine
+% \healthmark to change the symbol.
+\newcommand\healthmark{\textdaggerdbl}
+
 %% ----------------------------------------------------------- missing data
 % The gaps option (or \def\cvshowgaps{}) makes a review copy, for the owner
 % only, that marks missing data in its own colour (CVgap, orange: none of the

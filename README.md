@@ -209,7 +209,7 @@ every CV that uses the template.
 - Commands: `\setreviewperiod`, `\hlteaching`, `\hlresearch`, `\hlservice`,
   `\hlaward`, `\hlboth`, `\hl…row`, `\aprsample`, `\aprlinemark`, `\ifAPR`,
   `\sethighlightstrength`, `\sethighlightstyle`, `\keepwithnext`,
-  `\sectionbreak`, `\usvardate`, `\monthyear`, `\extlink`.
+  `\sectionbreak`, `\usvardate`, `\monthyear`, `\extlink`, `\healthmark`.
 - Section markup: `\cvsection`, `\cvsubheading`, `cvlist` and `cvbulletlist` with `\cvitem`, `cvgroup`, `cvparts`
   with `\cvpart` (bold title) and `\cvpart*` (plain title), `\printcategory`. Documented in the `uwhealthcv.sty` header.
   The indents and blank lines follow the Faculty of Health's vitae format (the
@@ -231,6 +231,9 @@ every CV that uses the template.
 - biblatex categories: `aprteaching`, `aprservice`, `apraward`, `aprnone`,
   `aprinclude`, `apralsoteaching`, `apralsoresearch`, `apralsoservice`,
   `apralsoaward`.
+- Author marks: `\healthmark` (‡), written after a co-author's family name in the .bib like
+  the trainee `*` and presenter `{\dag}` (`Clinician{\healthmark}, Casey`), for a co-author
+  whose primary appointment is in a health, clinical or public health unit (`uwhealthcv.sty`).
 - Per-entry detail line: `\setentrydetail{key}{text}` (`biblatex-formatting.tex`).
 - Per-entry margin tag: `\setentrytag{key}{text}`, a few words (e.g. "Top 2%") left of the
   entry, under its badge or APR dots when it has them, otherwise on its first line 8pt left of
