@@ -5,6 +5,10 @@ fixes, major for anything renamed or removed (with what a CV must change).
 
 ## Unreleased
 
+## v0.11.1 — 2026-11-24
+
+One fix: nothing for a CV to change.
+
 - `\extlink`'s arrow no longer turns into the icon's name
   ("External-Link-Alt") when text is copied from the PDF or extracted
   (`pdftotext`, ATS and indexing tools): the icon carries an empty
